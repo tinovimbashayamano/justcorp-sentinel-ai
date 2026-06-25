@@ -239,7 +239,9 @@ data/raw/*
 !data/raw/.gitkeep
 
 # Model artifacts
-models/
+model_artifacts/
+ml/model_artifacts/
+backend/model_artifacts/
 *.pkl
 *.joblib
 *.pickle
