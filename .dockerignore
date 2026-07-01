@@ -1,0 +1,10 @@
+.git
+.venv
+venv
+__pycache__
+*.pyc
+.env
+data/raw
+reports/audit_reports
+reports/model_reports
+.ipynb_checkpoints

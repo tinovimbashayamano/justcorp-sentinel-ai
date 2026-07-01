@@ -1,0 +1,43 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.backend
+    container_name: justcorp_backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.example
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app/backend
+    networks:
+      - justcorp_network
+
+  postgres:
+    image: postgres:16
+    container_name: justcorp_postgres
+    environment:
+      POSTGRES_USER: justcorp_user
+      POSTGRES_PASSWORD: justcorp_password
+      POSTGRES_DB: justcorp_sentinel_ai
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U justcorp_user -d justcorp_sentinel_ai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - justcorp_network
+
+volumes:
+  postgres_data:
+
+networks:
+  justcorp_network:
+    driver: bridge
