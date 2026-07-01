@@ -1,0 +1,9 @@
+# Step 1: Problem Definition
+
+Financial institutions and risk-driven organisations, including FinTech firms, microfinance providers, insurance companies, and risk analytics teams, constantly face challenges in detecting fraudulent or suspicious financial transactions. As transaction volumes increase, manual fraud review becomes slow, inconsistent, and difficult to scale. Conventional rule-based fraud detection systems can identify known fraud patterns, but they often struggle to adapt when fraudulent behaviour changes over time.
+
+Machine learning offers a way to improve fraud detection by learning patterns from historical transaction data. However, many machine learning models function as black boxes, producing fraud predictions without clearly explaining the reasoning behind each decision. This creates a serious challenge for fraud analysts, risk officers, auditors, compliance teams, and business leaders who need to understand, justify, and document fraud-related decisions.
+
+The core problem addressed by this project is the lack of an explainable, audit-ready, and API-accessible fraud intelligence platform capable of detecting potentially fraudulent financial transactions, explaining the rationale behind model decisions, supporting real-time transaction scoring, and producing structured reports for investigation, audit, and decision-making.
+
+JustCorp Sentinel AI seeks to address this gap by integrating machine learning fraud detection models with explainable AI methods, backend APIs, database storage, and reporting capabilities. The platform is designed to support fraud analysts and risk teams by helping them identify suspicious transactions more efficiently, understand why transactions are flagged, and generate structured evidence to support review and decision-making.
