@@ -32,7 +32,7 @@ def inspect_file(file_name: str) -> None:
     print("First 10 columns:")
     print(list(df_preview.columns[:10]))
 
-    if "isFraud" in df_preview.columns:
+    if file_name == "train_transaction.csv" and "isFraud" in df_preview.columns:
         full_target = pd.read_csv(file_path, usecols=["isFraud"])
         print("Target distribution:")
         print(full_target["isFraud"].value_counts())
