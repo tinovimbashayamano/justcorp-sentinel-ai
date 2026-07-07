@@ -1,11 +1,28 @@
 from pathlib import Path
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 
 
-DATA_DIR = Path("data/raw")
-FIGURES_DIR = Path("reports/figures")
-SUMMARY_DIR = Path("reports/model_reports")
+def find_project_root(start: Path = Path.cwd(), marker: str = "data/raw") -> Path:
+    """Walk parents from start until a folder containing `marker` exists.
+
+    Raises FileNotFoundError if not found.
+    """
+    current = start.resolve()
+    while True:
+        if (current / marker).exists():
+            return current
+        if current.parent == current:
+            raise FileNotFoundError(f"Could not locate '{marker}' under {start} or its parents")
+        current = current.parent
+
+
+# Resolve repository root and standard paths so the script runs from anywhere
+PROJECT_ROOT = find_project_root()
+DATA_DIR = PROJECT_ROOT / "data" / "raw"
+FIGURES_DIR = PROJECT_ROOT / "reports" / "figures"
+SUMMARY_DIR = PROJECT_ROOT / "reports" / "model_reports"
 
 TRAIN_TRANSACTION_FILE = DATA_DIR / "train_transaction.csv"
 TRAIN_IDENTITY_FILE = DATA_DIR / "train_identity.csv"
@@ -106,25 +123,52 @@ def identify_near_constant_columns(
     return near_constant_columns
 
 
-def calculate_numeric_correlations(df: pd.DataFrame) -> pd.DataFrame:
-    numeric_df = df.select_dtypes(include=["number"])
+def calculate_numeric_correlations(
+    df: pd.DataFrame,
+    sample_max_rows: int = 200_000,
+    memory_threshold_bytes: int = 1_000_000_000,
+) -> pd.DataFrame:
+    """
+    Compute correlations between numeric features and `isFraud` in a
+    memory-efficient way. If the estimated memory to hold the numeric
+    matrix exceeds `memory_threshold_bytes`, a random sample of rows
+    (up to `sample_max_rows`) is used.
+    """
+    if "isFraud" not in df.columns:
+        return pd.DataFrame(columns=["feature_name", "absolute_correlation", "signed_correlation"])
 
-    correlations = numeric_df.corr(numeric_only=True)["isFraud"].drop(
-        labels=["isFraud"],
-        errors="ignore",
-    )
+    numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+    # remove target if present
+    numeric_cols = [c for c in numeric_cols if c != "isFraud"]
 
-    correlation_df = (
-        correlations.abs()
-        .sort_values(ascending=False)
-        .reset_index()
-        .rename(columns={"index": "feature_name", "isFraud": "absolute_correlation"})
-    )
+    n_rows = df.shape[0]
+    n_cols = len(numeric_cols)
+    estimated_bytes = int(n_rows) * int(n_cols) * 8
 
-    signed_correlations = correlations.reindex(correlation_df["feature_name"]).values
-    correlation_df["signed_correlation"] = signed_correlations
+    if estimated_bytes > memory_threshold_bytes and n_rows > sample_max_rows:
+        sample_n = min(sample_max_rows, n_rows)
+        df_sample = df.sample(n=sample_n, random_state=0)
+    else:
+        df_sample = df
 
-    return correlation_df
+    cor_records = []
+    y = df_sample["isFraud"].astype(float)
+    for col in numeric_cols:
+        try:
+            x = df_sample[col].astype(float)
+            corr = x.corr(y)
+        except Exception:
+            corr = np.nan
+        cor_records.append({"feature_name": col, "signed_correlation": corr})
+
+    correlation_df = pd.DataFrame(cor_records)
+    if correlation_df.empty:
+        return correlation_df
+
+    correlation_df["absolute_correlation"] = correlation_df["signed_correlation"].abs()
+    correlation_df = correlation_df.sort_values("absolute_correlation", ascending=False).reset_index(drop=True)
+
+    return correlation_df[["feature_name", "absolute_correlation", "signed_correlation"]]
 
 
 def create_feature_selection_summary(
@@ -149,13 +193,11 @@ def create_feature_selection_summary(
     summary["average_unique_values"] = summary["average_unique_values"].round(3)
 
     summary["near_constant_columns_in_group"] = summary["column_group"].apply(
-        lambda group: sum(
-            missingness_df[
-                (missingness_df["column_group"] == group)
-                & (missingness_df["column_name"].isin(near_constant_columns))
-            ].shape
-        )
-    )
+    lambda group: missingness_df[
+        (missingness_df["column_group"] == group)
+        & (missingness_df["column_name"].isin(near_constant_columns))
+    ].shape[0]
+)
 
     return summary.sort_values("feature_count", ascending=False)
 
