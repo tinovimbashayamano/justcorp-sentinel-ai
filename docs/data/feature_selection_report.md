@@ -50,5 +50,14 @@ The following outputs were generated:
 - `reports/model_reports/feature_missingness_summary.csv`
 - `reports/model_reports/numeric_correlations_with_fraud.csv`
 
-## Conclusion
-Write a short conclusion explaining how this feature selection analysis will guide preprocessing and later model development.
+
+## Recommendations
+
+- Retain anonymous `V` features for now because several of them show the strongest initial relationship with the fraud target.
+- Review columns with more than 90% missing values before preprocessing. These columns may be dropped, imputed, or converted into missingness indicators depending on modelling value.
+- Review near-constant columns because they may add little useful signal and may increase model complexity.
+- Keep `TransactionID` only as an identifier and exclude it from model training.
+- Use `isFraud` only as the target variable and never as an input feature.
+- Do not rely only on correlation for feature selection because correlation captures linear relationships only. XGBoost and LightGBM can learn non-linear patterns and interactions.
+- Use model-based feature importance and validation performance later to refine feature selection.
+- Avoid PCA as the first approach because the project requires explainable fraud decisions. Dimensionality reduction may reduce interpretability.
