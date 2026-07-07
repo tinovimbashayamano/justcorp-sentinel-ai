@@ -23,10 +23,14 @@ def classify_column(column_name: str) -> str:
         return "amount"
     if column_name == "ProductCD":
         return "product"
+    if column_name in ["DeviceType", "DeviceInfo"]:
+        return "identity_device_feature"
     if column_name.startswith("card"):
         return "card_feature"
     if column_name.startswith("addr"):
         return "address_feature"
+    if column_name.startswith("dist"):
+        return "distance_feature"
     if column_name in ["P_emaildomain", "R_emaildomain"]:
         return "email_domain"
     if column_name.startswith("C"):

@@ -12,8 +12,8 @@ train_transaction,card5,card_feature,float64,0.22,"['142.0', '102.0', '166.0']",
 train_transaction,card6,card_feature,object,0.01,"['credit', 'credit', 'debit']",590540
 train_transaction,addr1,address_feature,float64,9.13,"['315.0', '325.0', '330.0']",590540
 train_transaction,addr2,address_feature,float64,9.13,"['87.0', '87.0', '87.0']",590540
-train_transaction,dist1,other,float64,66.15,"['19.0', '287.0', '36.0']",590540
-train_transaction,dist2,other,float64,96.22,"['30.0', '98.0', '149.0']",590540
+train_transaction,dist1,distance_feature,float64,66.15,"['19.0', '287.0', '36.0']",590540
+train_transaction,dist2,distance_feature,float64,96.22,"['30.0', '98.0', '149.0']",590540
 train_transaction,P_emaildomain,email_domain,object,21.05,"['gmail.com', 'outlook.com', 'yahoo.com']",590540
 train_transaction,R_emaildomain,email_domain,object,83.75,"['gmail.com', 'hotmail.com', 'gmail.com']",590540
 train_transaction,C1,count_feature,float64,0.0,"['1.0', '1.0', '1.0']",590540
@@ -432,5 +432,5 @@ train_identity,id_35,identity_feature,object,2.5,"['T', 'T', 'F']",144233
 train_identity,id_36,identity_feature,object,2.5,"['F', 'F', 'F']",144233
 train_identity,id_37,identity_feature,object,2.5,"['T', 'F', 'T']",144233
 train_identity,id_38,identity_feature,object,2.5,"['T', 'T', 'T']",144233
-train_identity,DeviceType,time_delta_feature,object,2.5,"['mobile', 'mobile', 'desktop']",144233
-train_identity,DeviceInfo,time_delta_feature,object,13.85,"['SAMSUNG SM-G892A Build/NRD90M', 'iOS Device', 'Windows']",144233
+train_identity,DeviceType,identity_device_feature,object,2.5,"['mobile', 'mobile', 'desktop']",144233
+train_identity,DeviceInfo,identity_device_feature,object,13.85,"['SAMSUNG SM-G892A Build/NRD90M', 'iOS Device', 'Windows']",144233
