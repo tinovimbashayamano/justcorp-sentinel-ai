@@ -54,16 +54,16 @@ The XGBoost model achieved the following metrics on the held-out test set.
 
 | Metric | Value |
 |---|---:|
-| Accuracy | 0.8625 |
-| Precision | 0.1747 |
-| Recall | 0.7871 |
-| F1-score | 0.2860 |
-| ROC-AUC | 0.9037 |
-| Average precision / PR-AUC | 0.5350 |
+| Accuracy | 0.863498 |
+| Precision | 0.176445 |
+| Recall | 0.790951 |
+| F1-score | 0.288526 |
+| ROC-AUC | 0.904650 |
+| Average precision / PR-AUC | 0.535844 |
 
 ## Interpretation
 
-XGBoost improved over the baseline model on nearly every metric, especially ROC-AUC and PR-AUC. The recall increased from 0.7445 to 0.7871, which means the model detected more fraud cases, while the precision remained low at 0.1747. This is a common outcome in highly imbalanced fraud detection tasks where improving recall often increases false positives. PR-AUC also improved substantially, which is important because it better reflects minority-class performance than accuracy. XGBoost is more suitable than the baseline for this task because it can model non-linear interactions and capture more complex fraud patterns. It is still not necessarily the final model, however, and should be compared with LightGBM before a production decision is made.
+XGBoost improved over the baseline model on nearly every metric, especially ROC-AUC and PR-AUC. The recall increased from 0.7445 to 0.790951, which means the model detected more fraud cases, while the precision improved from 0.1092 to 0.176445. This is a common outcome in highly imbalanced fraud detection tasks where improving recall often increases false positives. PR-AUC also improved substantially, which is important because it better reflects minority-class performance than accuracy. XGBoost is more suitable than the baseline for this task because it can model non-linear interactions and capture more complex fraud patterns. It is still not necessarily the final model, however, and should be compared with LightGBM before a production decision is made.
 
 ## Generated Outputs
 
