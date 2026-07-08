@@ -238,6 +238,10 @@ env/
 data/raw/*
 !data/raw/.gitkeep
 
+data/processed/*.csv
+data/processed/*.csv.gz
+data/processed/*.parquet
+
 # Model artifacts
 model_artifacts/
 ml/model_artifacts/
