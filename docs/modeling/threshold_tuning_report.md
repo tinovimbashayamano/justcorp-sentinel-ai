@@ -34,10 +34,12 @@ The following threshold-level metrics were evaluated:
 
 The best threshold results after running the script are shown below.
 
-| Selected threshold | Accuracy | Precision | Recall | F1-score | Predicted fraud count |
-|---:|---:|---:|---:|---:|---:|
-| 0.84 | 0.974947 | 0.678095 | 0.540769 | 0.601696 | 3296 |
+## Default Threshold Comparison
 
+| Threshold | Accuracy | Precision | Recall | F1-score | Predicted fraud count |
+|---:|---:|---:|---:|---:|---:|
+| 0.50 | 0.889821 | 0.217665 | 0.828212 | 0.344730 | 15,726 |
+| 0.84 | 0.974947 | 0.678095 | 0.540769 | 0.601696 | 3,296 |
 ## Interpretation
 
 The threshold that produced the best F1-score was 0.84. This is higher than the default 0.50 threshold, which means the tuned model is more conservative and favours precision over recall. Threshold tuning matters in fraud detection because the business objective is usually to balance the number of alerts with the quality of those alerts. This threshold is a strong starting point, but it may still need to be adjusted based on fraud operations policy, alert workload, and business tolerance for missed fraud cases.
@@ -50,6 +52,7 @@ The threshold tuning script generated:
 - `reports/figures/lightgbm_best_threshold_confusion_matrix.png`
 - `reports/model_reports/lightgbm_threshold_tuning.csv`
 
+
 ## Conclusion
 
-The tuned threshold will guide fraud alerting by increasing sensitivity to suspicious transactions and supporting more informed deployment decisions. It should be reviewed alongside business constraints before final rollout.
+The tuned threshold of 0.84 provides a more conservative fraud alerting strategy than the default 0.50 threshold. It substantially improves precision and F1-score while reducing the number of predicted fraud alerts, but it also lowers recall. This threshold is useful when the business wants higher-quality fraud alerts and fewer false positives. However, the final threshold should still be reviewed against operational capacity, investigation workload, and the business cost of missed fraud cases.
