@@ -9,3 +9,9 @@ alembic
 passlib[bcrypt]
 python-jose[cryptography]
 python-multipart
+
+pandas
+numpy
+scikit-learn
+lightgbm
+joblib

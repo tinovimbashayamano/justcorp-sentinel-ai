@@ -1,4 +1,6 @@
-﻿from fastapi import FastAPI
+from fastapi import FastAPI
+
+from backend.app.api.fraud import router as fraud_router
 
 
 app = FastAPI(
@@ -9,6 +11,8 @@ app = FastAPI(
     ),
     version="0.1.0",
 )
+
+app.include_router(fraud_router)
 
 
 @app.get("/")
@@ -25,4 +29,3 @@ def health_check():
         "status": "healthy",
         "service": "justcorp-sentinel-ai-backend",
     }
-
