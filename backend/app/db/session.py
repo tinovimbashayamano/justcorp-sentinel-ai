@@ -1,18 +1,9 @@
-import os
 from collections.abc import Generator
 
-from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
-
-load_dotenv()
-
-
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql://justcorp_user:justcorp_password@localhost:5432/justcorp_sentinel_ai",
-)
+from backend.app.core.config import settings
 
 
 class Base(DeclarativeBase):
@@ -20,7 +11,7 @@ class Base(DeclarativeBase):
 
 
 engine = create_engine(
-    DATABASE_URL,
+    settings.database_url,
     pool_pre_ping=True,
 )
 

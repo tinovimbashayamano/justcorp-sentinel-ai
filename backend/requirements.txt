@@ -7,8 +7,10 @@ sqlalchemy
 psycopg2-binary
 alembic
 passlib[bcrypt]
+pwdlib[argon2]
 python-jose[cryptography]
 python-multipart
+email-validator
 
 pandas
 numpy
