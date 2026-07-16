@@ -6,9 +6,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from backend.app.core.security import create_access_token, hash_password
 from backend.app.db.session import Base, get_db
 from backend.app.main import app
 from backend.app.models.fraud_score import FraudScoreRecord
+from backend.app.models.user import User, UserRole
 from backend.app.services.fraud_scoring_service import MODEL_FILE
 
 
@@ -53,6 +55,37 @@ def setup_test_database():
 client = TestClient(app)
 
 
+def create_authenticated_user_headers() -> dict[str, str]:
+    db = TestingSessionLocal()
+
+    try:
+        user = User(
+            username="storagetestuser",
+            email="storagetest@example.com",
+            full_name="Storage Test User",
+            hashed_password=hash_password(
+                "SecurePassword123!"
+            ),
+            role=UserRole.VIEWER,
+            is_active=True,
+        )
+
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        token = create_access_token(
+            subject=str(user.id),
+            role=user.role.value,
+        )
+
+        return {
+            "Authorization": f"Bearer {token}",
+        }
+    finally:
+        db.close()
+
+
 @pytest.mark.skipif(
     not MODEL_AVAILABLE,
     reason="LightGBM model artifact is not available locally.",
@@ -81,7 +114,13 @@ def test_score_and_save_fraud_transaction():
         },
     }
 
-    response = client.post("/api/v1/fraud/score/save", json=payload)
+    headers = create_authenticated_user_headers()
+
+    response = client.post(
+        "/api/v1/fraud/score/save",
+        json=payload,
+        headers=headers,
+    )
 
     assert response.status_code == 200
 
@@ -125,11 +164,20 @@ def test_recent_fraud_scores_endpoint_returns_saved_records():
         },
     }
 
-    save_response = client.post("/api/v1/fraud/score/save", json=payload)
+    headers = create_authenticated_user_headers()
+
+    save_response = client.post(
+        "/api/v1/fraud/score/save",
+        json=payload,
+        headers=headers,
+    )
 
     assert save_response.status_code == 200
 
-    list_response = client.get("/api/v1/fraud/scores?limit=5")
+    list_response = client.get(
+        "/api/v1/fraud/scores?limit=5",
+        headers=headers,
+    )
 
     assert list_response.status_code == 200
 
@@ -141,6 +189,11 @@ def test_recent_fraud_scores_endpoint_returns_saved_records():
 
 
 def test_recent_fraud_scores_limit_validation():
-    response = client.get("/api/v1/fraud/scores?limit=0")
+    headers = create_authenticated_user_headers()
+
+    response = client.get(
+        "/api/v1/fraud/scores?limit=0",
+        headers=headers,
+    )
 
     assert response.status_code == 422

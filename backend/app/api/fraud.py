@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from backend.app.core.dependencies import get_current_active_user
 from backend.app.db.session import get_db
 from backend.app.schemas.fraud import (
     FraudModelHealthResponse,
@@ -32,6 +33,9 @@ from backend.app.services.fraud_scoring_service import (
 router = APIRouter(
     prefix="/api/v1/fraud",
     tags=["Fraud Scoring"],
+    dependencies=[
+        Depends(get_current_active_user),
+    ],
 )
 
 
