@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from backend.app.api.auth import router as auth_router
 from backend.app.api.fraud import router as fraud_router
 
 
@@ -12,6 +13,7 @@ app = FastAPI(
     version="0.1.0",
 )
 
+app.include_router(auth_router)
 app.include_router(fraud_router)
 
 
