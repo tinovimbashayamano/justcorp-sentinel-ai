@@ -41,7 +41,7 @@ The fraud scoring records are stored in:
 ### Score and Save Transaction
 
 ```http
-POST /api//save
+POST /api/v1/fraud/score/save
 ```
 
 This endpoint scores a submitted transaction and saves the scoring result to `fraud_score_records`.
@@ -49,7 +49,7 @@ This endpoint scores a submitted transaction and saves the scoring result to `fr
 ### List Recent Fraud Scores
 
 ```http
-GET /api/scores
+GET /api/v1/fraud/scores
 ```
 
 This endpoint returns recent saved fraud scoring records. The optional `limit` query parameter controls how many records are returned and accepts values from `1` to `100`.
@@ -65,4 +65,3 @@ Create the database table with:
 ## Audit Value
 
 Persisting fraud scores creates a reviewable history of model decisions. This supports investigation workflows, later reporting, and audit checks that need to connect a transaction score to the model name, probability, threshold, risk band, and feature-quality context used at scoring time.
-

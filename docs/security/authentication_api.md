@@ -28,7 +28,7 @@ Publicly registered users receive the default `viewer` role.
 ### Login
 
 ```http
-POST /api/auth/login
+POST /api/v1/auth/login
 ```
 
 The login endpoint accepts OAuth2 form fields:
@@ -47,7 +47,7 @@ Successful login returns:
 ### Current User
 
 ```http
-GET /api/auth/me
+GET /api/v1/auth/me
 ```
 
 This endpoint requires:
