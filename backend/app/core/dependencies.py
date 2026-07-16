@@ -132,3 +132,13 @@ AnyAuthenticatedUser = Annotated[
     User,
     Depends(get_current_active_user),
 ]
+
+
+AdminUser = Annotated[
+    User,
+    Depends(
+        require_roles(
+            UserRole.ADMIN,
+        )
+    ),
+]
