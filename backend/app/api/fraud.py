@@ -1,7 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from backend.app.core.dependencies import get_current_active_user
+from backend.app.core.dependencies import (
+    AdminAnalystOrAuditor,
+    AdminOrAnalyst,
+    AnyAuthenticatedUser,
+)
 from backend.app.db.session import get_db
 from backend.app.schemas.fraud import (
     FraudModelHealthResponse,
@@ -33,14 +37,13 @@ from backend.app.services.fraud_scoring_service import (
 router = APIRouter(
     prefix="/api/v1/fraud",
     tags=["Fraud Scoring"],
-    dependencies=[
-        Depends(get_current_active_user),
-    ],
 )
 
 
 @router.get("/health", response_model=FraudModelHealthResponse)
-def fraud_model_health():
+def fraud_model_health(
+    _: AnyAuthenticatedUser,
+):
     try:
         return get_model_health()
     except RuntimeError as error:
@@ -48,7 +51,10 @@ def fraud_model_health():
 
 
 @router.post("/score", response_model=FraudScoreResponse)
-def score_fraud_transaction(request: FraudScoreRequest):
+def score_fraud_transaction(
+    request: FraudScoreRequest,
+    _: AdminOrAnalyst,
+):
     try:
         result = score_transaction(request.features)
     except RuntimeError as error:
@@ -68,6 +74,7 @@ def score_fraud_transaction(request: FraudScoreRequest):
 @router.post("/score/save", response_model=FraudScoreRecordResponse)
 def score_and_save_fraud_transaction(
     request: FraudScoreRequest,
+    _: AdminOrAnalyst,
     db: Session = Depends(get_db),
 ):
     try:
@@ -90,6 +97,7 @@ def score_and_save_fraud_transaction(
 
 @router.get("/scores", response_model=list[FraudScoreRecordResponse])
 def get_recent_fraud_scores(
+    _: AdminAnalystOrAuditor,
     limit: int = Query(default=20, ge=1, le=100),
     db: Session = Depends(get_db),
 ):
@@ -99,6 +107,7 @@ def get_recent_fraud_scores(
 @router.post("/cases", response_model=FraudCaseResponse)
 def create_case_review(
     request: FraudCaseCreateRequest,
+    _: AdminOrAnalyst,
     db: Session = Depends(get_db),
 ):
     try:
@@ -109,6 +118,7 @@ def create_case_review(
 
 @router.get("/cases", response_model=list[FraudCaseResponse])
 def get_recent_fraud_cases(
+    _: AdminAnalystOrAuditor,
     limit: int = Query(default=20, ge=1, le=100),
     case_status: str | None = Query(default=None),
     db: Session = Depends(get_db),
@@ -126,6 +136,7 @@ def get_recent_fraud_cases(
 @router.get("/cases/{case_id}", response_model=FraudCaseResponse)
 def get_case_review(
     case_id: int,
+    _: AdminAnalystOrAuditor,
     db: Session = Depends(get_db),
 ):
     case = get_fraud_case(db=db, case_id=case_id)
@@ -143,6 +154,7 @@ def get_case_review(
 def update_case_review(
     case_id: int,
     request: FraudCaseUpdateRequest,
+    _: AdminOrAnalyst,
     db: Session = Depends(get_db),
 ):
     try:

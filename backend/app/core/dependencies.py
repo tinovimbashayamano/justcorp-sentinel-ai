@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
@@ -9,7 +10,7 @@ from backend.app.core.security import (
     decode_access_token,
 )
 from backend.app.db.session import get_db
-from backend.app.models.user import User
+from backend.app.models.user import User, UserRole
 from backend.app.services.auth_service import get_user_by_id
 
 
@@ -82,6 +83,52 @@ def get_current_active_user(
 
 
 CurrentUser = Annotated[
+    User,
+    Depends(get_current_active_user),
+]
+
+
+def require_roles(
+    *allowed_roles: UserRole,
+) -> Callable:
+    def role_dependency(
+        current_user: CurrentUser,
+    ):
+        if current_user.role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to perform this action.",
+            )
+
+        return current_user
+
+    return role_dependency
+
+
+AdminOrAnalyst = Annotated[
+    User,
+    Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.FRAUD_ANALYST,
+        )
+    ),
+]
+
+
+AdminAnalystOrAuditor = Annotated[
+    User,
+    Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.FRAUD_ANALYST,
+            UserRole.AUDITOR,
+        )
+    ),
+]
+
+
+AnyAuthenticatedUser = Annotated[
     User,
     Depends(get_current_active_user),
 ]

@@ -66,7 +66,7 @@ def create_authenticated_user_headers() -> dict[str, str]:
             hashed_password=hash_password(
                 "SecurePassword123!"
             ),
-            role=UserRole.VIEWER,
+            role=UserRole.FRAUD_ANALYST,
             is_active=True,
         )
 
