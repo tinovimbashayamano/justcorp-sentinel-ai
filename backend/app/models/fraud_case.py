@@ -21,6 +21,22 @@ class FraudCaseReview(Base):
         default="open",
     )
 
+    priority: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default="medium",
+    )
+
+    assigned_to: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    closure_reason: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+    )
+
     analyst_decision: Mapped[str | None] = mapped_column(
         String(100),
         nullable=True,

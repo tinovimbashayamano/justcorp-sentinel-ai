@@ -146,7 +146,11 @@ def create_case_review(
     db: Session = Depends(get_db),
 ):
     try:
-        case = create_fraud_case(db=db, request=payload)
+        case = create_fraud_case(
+            db=db,
+            request=payload,
+            user=current_user,
+        )
 
         safely_create_audit_log(
             db=db,
@@ -158,6 +162,7 @@ def create_case_review(
             request=request,
             details={
                 "case_status": case.case_status,
+                "priority": case.priority,
                 "analyst_decision": case.analyst_decision,
             },
         )
@@ -227,6 +232,7 @@ def update_case_review(
             db=db,
             case_id=case_id,
             request=payload,
+            user=current_user,
         )
 
         safely_create_audit_log(

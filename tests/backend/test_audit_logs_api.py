@@ -289,6 +289,7 @@ def test_case_creation_creates_audit_log():
     assert len(logs) == 1
     assert logs[0].details == {
         "case_status": "open",
+        "priority": "medium",
         "analyst_decision": "pending",
     }
     assert "confidential case note" not in json.dumps(logs[0].details)

@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from backend.app.api.admin_users import router as admin_users_router
 from backend.app.api.audit_logs import router as audit_logs_router
 from backend.app.api.auth import router as auth_router
+from backend.app.api.case_history import router as case_history_router
 from backend.app.api.fraud import router as fraud_router
 
 
@@ -20,6 +21,10 @@ app.include_router(fraud_router)
 app.include_router(admin_users_router)
 app.include_router(
     audit_logs_router,
+    prefix="/api/v1",
+)
+app.include_router(
+    case_history_router,
     prefix="/api/v1",
 )
 

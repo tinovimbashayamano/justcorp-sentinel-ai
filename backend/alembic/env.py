@@ -8,6 +8,7 @@ from backend.app.db.session import Base
 
 # Import every model so SQLAlchemy registers all tables.
 from backend.app.models.audit_log import AuditLog
+from backend.app.models.case_history import CaseHistory
 from backend.app.models.fraud_case import FraudCaseReview
 from backend.app.models.fraud_score import FraudScoreRecord
 from backend.app.models.refresh_token import RefreshToken

@@ -7,6 +7,7 @@ Alembic migrations. SQLAlchemy create_all() does not modify existing tables.
 
 from backend.app.db.session import Base, engine
 from backend.app.models.audit_log import AuditLog
+from backend.app.models.case_history import CaseHistory
 from backend.app.models.fraud_case import FraudCaseReview
 from backend.app.models.fraud_score import FraudScoreRecord
 from backend.app.models.refresh_token import RefreshToken
@@ -21,6 +22,7 @@ def init_db() -> None:
     print(f"Registered table: {User.__tablename__}")
     print(f"Registered table: {RefreshToken.__tablename__}")
     print(f"Registered table: {AuditLog.__tablename__}")
+    print(f"Registered table: {CaseHistory.__tablename__}")
 
 
 if __name__ == "__main__":
