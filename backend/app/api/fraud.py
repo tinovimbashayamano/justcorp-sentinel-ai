@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 
+from backend.app.core.audit import AuditAction, AuditStatus
 from backend.app.core.dependencies import (
     AdminAnalystOrAuditor,
     AdminOrAnalyst,
@@ -18,6 +19,7 @@ from backend.app.schemas.fraud_case import (
     FraudCaseUpdateRequest,
 )
 from backend.app.schemas.fraud_record import FraudScoreRecordResponse
+from backend.app.services.audit_service import safely_create_audit_log
 from backend.app.services.fraud_case_service import (
     create_fraud_case,
     get_fraud_case,
@@ -52,11 +54,28 @@ def fraud_model_health(
 
 @router.post("/score", response_model=FraudScoreResponse)
 def score_fraud_transaction(
-    request: FraudScoreRequest,
-    _: AdminOrAnalyst,
+    payload: FraudScoreRequest,
+    request: Request,
+    current_user: AdminOrAnalyst,
+    db: Session = Depends(get_db),
 ):
     try:
-        result = score_transaction(request.features)
+        result = score_transaction(payload.features)
+
+        safely_create_audit_log(
+            db=db,
+            action=AuditAction.FRAUD_SCORE,
+            status=AuditStatus.SUCCESS,
+            user=current_user,
+            resource_type="transaction",
+            resource_id=payload.transaction_id,
+            request=request,
+            details={
+                "fraud_prediction": result["fraud_prediction"],
+                "fraud_probability": result["fraud_probability"],
+                "fraud_threshold": result["fraud_threshold"],
+            },
+        )
     except RuntimeError as error:
         raise HTTPException(status_code=503, detail=str(error)) from error
     except Exception as error:
@@ -66,23 +85,38 @@ def score_fraud_transaction(
         ) from error
 
     return {
-        "transaction_id": request.transaction_id,
+        "transaction_id": payload.transaction_id,
         **result,
     }
 
 
 @router.post("/score/save", response_model=FraudScoreRecordResponse)
 def score_and_save_fraud_transaction(
-    request: FraudScoreRequest,
-    _: AdminOrAnalyst,
+    payload: FraudScoreRequest,
+    request: Request,
+    current_user: AdminOrAnalyst,
     db: Session = Depends(get_db),
 ):
     try:
-        result = score_transaction(request.features)
+        result = score_transaction(payload.features)
         record = save_fraud_score_record(
             db=db,
-            transaction_id=request.transaction_id,
+            transaction_id=payload.transaction_id,
             scoring_result=result,
+        )
+
+        safely_create_audit_log(
+            db=db,
+            action=AuditAction.FRAUD_SCORE_SAVE,
+            status=AuditStatus.SUCCESS,
+            user=current_user,
+            resource_type="fraud_score_record",
+            resource_id=record.id,
+            request=request,
+            details={
+                "transaction_id": record.transaction_id,
+                "fraud_prediction": record.fraud_prediction,
+            },
         )
 
         return record
@@ -106,12 +140,29 @@ def get_recent_fraud_scores(
 
 @router.post("/cases", response_model=FraudCaseResponse)
 def create_case_review(
-    request: FraudCaseCreateRequest,
-    _: AdminOrAnalyst,
+    payload: FraudCaseCreateRequest,
+    request: Request,
+    current_user: AdminOrAnalyst,
     db: Session = Depends(get_db),
 ):
     try:
-        return create_fraud_case(db=db, request=request)
+        case = create_fraud_case(db=db, request=payload)
+
+        safely_create_audit_log(
+            db=db,
+            action=AuditAction.CASE_CREATE,
+            status=AuditStatus.SUCCESS,
+            user=current_user,
+            resource_type="fraud_case_review",
+            resource_id=case.id,
+            request=request,
+            details={
+                "case_status": case.case_status,
+                "analyst_decision": case.analyst_decision,
+            },
+        )
+
+        return case
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
 
@@ -153,15 +204,44 @@ def get_case_review(
 @router.patch("/cases/{case_id}", response_model=FraudCaseResponse)
 def update_case_review(
     case_id: int,
-    request: FraudCaseUpdateRequest,
-    _: AdminOrAnalyst,
+    payload: FraudCaseUpdateRequest,
+    request: Request,
+    current_user: AdminOrAnalyst,
     db: Session = Depends(get_db),
 ):
     try:
-        return update_fraud_case(
+        existing_case = get_fraud_case(db=db, case_id=case_id)
+        update_data = payload.model_dump(exclude_unset=True)
+        changed_fields = {
+            field: {
+                "old": getattr(existing_case, field),
+                "new": value,
+            }
+            for field, value in update_data.items()
+            if existing_case is not None
+            and field != "analyst_notes"
+            and getattr(existing_case, field) != value
+        }
+
+        updated_case = update_fraud_case(
             db=db,
             case_id=case_id,
-            request=request,
+            request=payload,
         )
+
+        safely_create_audit_log(
+            db=db,
+            action=AuditAction.CASE_UPDATE,
+            status=AuditStatus.SUCCESS,
+            user=current_user,
+            resource_type="fraud_case_review",
+            resource_id=updated_case.id,
+            request=request,
+            details={
+                "changed_fields": changed_fields,
+            },
+        )
+
+        return updated_case
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error

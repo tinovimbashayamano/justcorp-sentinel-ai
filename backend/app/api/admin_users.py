@@ -3,10 +3,12 @@ from fastapi import (
     Depends,
     HTTPException,
     Query,
+    Request,
     status,
 )
 from sqlalchemy.orm import Session
 
+from backend.app.core.audit import AuditAction, AuditStatus
 from backend.app.core.dependencies import AdminUser
 from backend.app.db.session import get_db
 from backend.app.schemas.auth import UserResponse
@@ -14,6 +16,7 @@ from backend.app.schemas.user_management import (
     UserRoleUpdateRequest,
     UserStatusUpdateRequest,
 )
+from backend.app.services.audit_service import safely_create_audit_log
 from backend.app.services.user_management_service import (
     UserManagementError,
     get_user,
@@ -75,17 +78,42 @@ def read_user(
 )
 def change_user_role(
     user_id: int,
-    request: UserRoleUpdateRequest,
+    payload: UserRoleUpdateRequest,
+    request: Request,
     current_admin: AdminUser,
     db: Session = Depends(get_db),
 ):
     try:
-        return update_user_role(
+        target_user = get_user(db=db, user_id=user_id)
+        old_role = (
+            target_user.role.value
+            if target_user is not None
+            else None
+        )
+
+        updated_user = update_user_role(
             db=db,
             user_id=user_id,
-            new_role=request.role,
+            new_role=payload.role,
             current_admin=current_admin,
         )
+
+        safely_create_audit_log(
+            db=db,
+            action=AuditAction.USER_ROLE_UPDATE,
+            status=AuditStatus.SUCCESS,
+            user=current_admin,
+            resource_type="user",
+            resource_id=updated_user.id,
+            request=request,
+            details={
+                "old_role": old_role,
+                "new_role": updated_user.role.value,
+                "target_username": updated_user.username,
+            },
+        )
+
+        return updated_user
     except UserManagementError as error:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -99,17 +127,42 @@ def change_user_role(
 )
 def change_user_status(
     user_id: int,
-    request: UserStatusUpdateRequest,
+    payload: UserStatusUpdateRequest,
+    request: Request,
     current_admin: AdminUser,
     db: Session = Depends(get_db),
 ):
     try:
-        return update_user_status(
+        target_user = get_user(db=db, user_id=user_id)
+        old_status = (
+            target_user.is_active
+            if target_user is not None
+            else None
+        )
+
+        updated_user = update_user_status(
             db=db,
             user_id=user_id,
-            is_active=request.is_active,
+            is_active=payload.is_active,
             current_admin=current_admin,
         )
+
+        safely_create_audit_log(
+            db=db,
+            action=AuditAction.USER_STATUS_UPDATE,
+            status=AuditStatus.SUCCESS,
+            user=current_admin,
+            resource_type="user",
+            resource_id=updated_user.id,
+            request=request,
+            details={
+                "old_is_active": old_status,
+                "new_is_active": updated_user.is_active,
+                "target_username": updated_user.username,
+            },
+        )
+
+        return updated_user
     except UserManagementError as error:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
