@@ -1,3 +1,10 @@
+"""
+Development bootstrap utility.
+
+Production and deployed database schema changes must be applied through
+Alembic migrations. SQLAlchemy create_all() does not modify existing tables.
+"""
+
 from backend.app.db.session import Base, engine
 from backend.app.models.fraud_case import FraudCaseReview
 from backend.app.models.fraud_score import FraudScoreRecord
