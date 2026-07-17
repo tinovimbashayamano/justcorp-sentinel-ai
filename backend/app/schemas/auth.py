@@ -97,10 +97,29 @@ class UserResponse(BaseModel):
     updated_at: datetime
 
 
-class AccessTokenResponse(BaseModel):
+class TokenPairResponse(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"
     expires_in_seconds: int
+
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str = Field(
+        ...,
+        min_length=32,
+    )
+
+
+class LogoutRequest(BaseModel):
+    refresh_token: str = Field(
+        ...,
+        min_length=32,
+    )
+
+
+class MessageResponse(BaseModel):
+    message: str
 
 
 class TokenPayload(BaseModel):

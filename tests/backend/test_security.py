@@ -5,8 +5,10 @@ import pytest
 from backend.app.core.security import (
     TokenValidationError,
     create_access_token,
+    create_refresh_token,
     decode_access_token,
     hash_password,
+    hash_refresh_token,
     verify_password,
 )
 
@@ -67,3 +69,13 @@ def test_expired_access_token_is_rejected():
 
     with pytest.raises(TokenValidationError):
         decode_access_token(token)
+
+
+def test_refresh_token_is_random_and_hashable():
+    first_token = create_refresh_token()
+    second_token = create_refresh_token()
+
+    assert first_token != second_token
+    assert len(first_token) >= 32
+    assert len(hash_refresh_token(first_token)) == 64
+    assert hash_refresh_token(first_token) != first_token

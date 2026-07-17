@@ -135,8 +135,9 @@ def test_login_with_username():
 
     data = response.json()
 
-    assert data["token_type"] == "bearer"
     assert data["access_token"]
+    assert data["refresh_token"]
+    assert data["token_type"] == "bearer"
     assert data["expires_in_seconds"] > 0
 
 
@@ -148,7 +149,12 @@ def test_login_with_email():
     )
 
     assert response.status_code == 200
-    assert response.json()["access_token"]
+
+    data = response.json()
+
+    assert data["access_token"]
+    assert data["refresh_token"]
+    assert data["token_type"] == "bearer"
 
 
 def test_login_with_wrong_password_is_rejected():

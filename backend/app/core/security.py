@@ -1,3 +1,5 @@
+import hashlib
+import secrets
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -12,6 +14,16 @@ password_hash = PasswordHash.recommended()
 
 class TokenValidationError(ValueError):
     """Raised when an access token cannot be validated."""
+
+
+def create_refresh_token() -> str:
+    return secrets.token_urlsafe(64)
+
+
+def hash_refresh_token(token: str) -> str:
+    return hashlib.sha256(
+        token.encode("utf-8")
+    ).hexdigest()
 
 
 def hash_password(password: str) -> str:

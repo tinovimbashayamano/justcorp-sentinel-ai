@@ -37,6 +37,12 @@ class Settings(BaseSettings):
         alias="ACCESS_TOKEN_EXPIRE_MINUTES",
     )
 
+    refresh_token_expire_days: int = Field(
+        default=7,
+        gt=0,
+        alias="REFRESH_TOKEN_EXPIRE_DAYS",
+    )
+
 
 @lru_cache
 def get_settings() -> Settings:
