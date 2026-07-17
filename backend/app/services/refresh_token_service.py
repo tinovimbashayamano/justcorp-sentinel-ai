@@ -131,3 +131,27 @@ def revoke_refresh_token(
         record.is_revoked = True
         record.revoked_at = datetime.now(UTC)
         db.commit()
+
+
+def revoke_all_user_refresh_tokens(
+    db: Session,
+    user_id: int,
+) -> int:
+    active_tokens = (
+        db.query(RefreshToken)
+        .filter(
+            RefreshToken.user_id == user_id,
+            RefreshToken.is_revoked.is_(False),
+        )
+        .all()
+    )
+
+    revocation_time = datetime.now(UTC)
+
+    for token_record in active_tokens:
+        token_record.is_revoked = True
+        token_record.revoked_at = revocation_time
+
+    db.commit()
+
+    return len(active_tokens)

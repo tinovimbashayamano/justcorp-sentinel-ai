@@ -118,6 +118,60 @@ class LogoutRequest(BaseModel):
     )
 
 
+class ChangePasswordRequest(BaseModel):
+    current_password: str = Field(
+        ...,
+        min_length=1,
+        max_length=128,
+    )
+
+    new_password: str = Field(
+        ...,
+        min_length=12,
+        max_length=128,
+    )
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password_strength(
+        cls,
+        value: str,
+    ) -> str:
+        checks = {
+            "uppercase letter": any(
+                character.isupper()
+                for character in value
+            ),
+            "lowercase letter": any(
+                character.islower()
+                for character in value
+            ),
+            "number": any(
+                character.isdigit()
+                for character in value
+            ),
+            "special character": any(
+                not character.isalnum()
+                for character in value
+            ),
+        }
+
+        missing_requirements = [
+            requirement
+            for requirement, passed in checks.items()
+            if not passed
+        ]
+
+        if missing_requirements:
+            raise ValueError(
+                "Password must contain at least one "
+                + ", ".join(missing_requirements)
+                + "."
+            )
+
+        return value
+
+
 class MessageResponse(BaseModel):
     message: str
 

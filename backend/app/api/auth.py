@@ -6,6 +6,7 @@ from backend.app.core.config import settings
 from backend.app.core.dependencies import CurrentUser
 from backend.app.db.session import get_db
 from backend.app.schemas.auth import (
+    ChangePasswordRequest,
     LogoutRequest,
     MessageResponse,
     RefreshTokenRequest,
@@ -21,9 +22,14 @@ from backend.app.services.auth_service import (
     issue_access_token,
     register_user,
 )
+from backend.app.services.password_service import (
+    PasswordChangeError,
+    change_user_password,
+)
 from backend.app.services.refresh_token_service import (
     RefreshTokenError,
     issue_refresh_token,
+    revoke_all_user_refresh_tokens,
     revoke_refresh_token,
     rotate_refresh_token,
     validate_refresh_token,
@@ -158,6 +164,57 @@ def logout_auth_user(
 
     return {
         "message": "Logout successful."
+    }
+
+
+@router.post(
+    "/change-password",
+    response_model=MessageResponse,
+)
+def change_authenticated_user_password(
+    request: ChangePasswordRequest,
+    current_user: CurrentUser,
+    db: Session = Depends(get_db),
+):
+    try:
+        revoked_session_count = change_user_password(
+            db=db,
+            user=current_user,
+            current_password=request.current_password,
+            new_password=request.new_password,
+        )
+
+        return {
+            "message": (
+                "Password changed successfully. "
+                f"{revoked_session_count} refresh session(s) revoked."
+            )
+        }
+
+    except PasswordChangeError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(error),
+        ) from error
+
+
+@router.post(
+    "/logout-all",
+    response_model=MessageResponse,
+)
+def logout_all_auth_sessions(
+    current_user: CurrentUser,
+    db: Session = Depends(get_db),
+):
+    revoked_session_count = revoke_all_user_refresh_tokens(
+        db=db,
+        user_id=current_user.id,
+    )
+
+    return {
+        "message": (
+            f"{revoked_session_count} refresh session(s) revoked."
+        )
     }
 
 
