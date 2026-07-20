@@ -21,6 +21,11 @@ class AuditAction(StrEnum):
     CASE_REASSIGNED = "case.assignment.reassigned"
     CASE_UNASSIGNED = "case.assignment.unassigned"
 
+    CASE_COMMENT_CREATE = "case.comment.create"
+    CASE_COMMENT_UPDATE = "case.comment.update"
+    CASE_COMMENT_DELETE = "case.comment.delete"
+    CASE_COMMENT_ACCESS_DENIED = "case.comment.access_denied"
+
 
 class AuditStatus(StrEnum):
     SUCCESS = "success"

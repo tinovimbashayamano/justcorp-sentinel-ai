@@ -142,3 +142,26 @@ AdminUser = Annotated[
         )
     ),
 ]
+
+
+CommentWriter = Annotated[
+    User,
+    Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.FRAUD_ANALYST,
+        )
+    ),
+]
+
+
+CommentReader = Annotated[
+    User,
+    Depends(
+        require_roles(
+            UserRole.ADMIN,
+            UserRole.FRAUD_ANALYST,
+            UserRole.AUDITOR,
+        )
+    ),
+]

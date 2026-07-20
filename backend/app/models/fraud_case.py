@@ -1,8 +1,14 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.db.session import Base
 from backend.app.models.user import User
+
+
+if TYPE_CHECKING:
+    from backend.app.models.case_comment import CaseComment
 
 
 class FraudCaseReview(Base):
@@ -44,6 +50,12 @@ class FraudCaseReview(Base):
 
     assigned_to_user: Mapped[User | None] = relationship(
         foreign_keys=[assigned_to_user_id],
+    )
+
+    comments: Mapped[list["CaseComment"]] = relationship(
+        back_populates="case",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 
     closure_reason: Mapped[str | None] = mapped_column(

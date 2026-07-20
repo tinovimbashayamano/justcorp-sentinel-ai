@@ -9,5 +9,8 @@ class CaseEvent(StrEnum):
     UNASSIGNED = "case.unassigned"
     REASSIGNED = "case.reassigned"
     COMMENT_ADDED = "case.comment_added"
+    COMMENT_CREATED = "case.comment.created"
+    COMMENT_UPDATED = "case.comment.updated"
+    COMMENT_DELETED = "case.comment.deleted"
     CLOSED = "case.closed"
     REOPENED = "case.reopened"
