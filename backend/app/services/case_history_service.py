@@ -15,6 +15,7 @@ def create_case_history(
     user: User | None,
     event_type: CaseEvent | str,
     details: dict[str, Any] | None = None,
+    commit: bool = True,
 ) -> CaseHistory:
     history_entry = CaseHistory(
         case_id=case.id,
@@ -25,8 +26,12 @@ def create_case_history(
     )
 
     db.add(history_entry)
-    db.commit()
-    db.refresh(history_entry)
+
+    if commit:
+        db.commit()
+        db.refresh(history_entry)
+    else:
+        db.flush()
 
     return history_entry
 

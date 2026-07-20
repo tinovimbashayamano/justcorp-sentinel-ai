@@ -1,14 +1,16 @@
-from sqlalchemy import desc
-from sqlalchemy.orm import Session
+from sqlalchemy import case as sql_case, desc, func
+from sqlalchemy.orm import Session, selectinload
 
+from backend.app.core.audit import AuditAction, AuditStatus
 from backend.app.core.case_history import CaseEvent
 from backend.app.models.fraud_case import FraudCaseReview
 from backend.app.models.fraud_score import FraudScoreRecord
-from backend.app.models.user import User
+from backend.app.models.user import User, UserRole
 from backend.app.schemas.fraud_case import (
     FraudCaseCreateRequest,
     FraudCaseUpdateRequest,
 )
+from backend.app.services.audit_service import create_audit_log
 from backend.app.services.case_history_service import create_case_history
 
 
@@ -34,6 +36,18 @@ VALID_CASE_PRIORITIES = {
     "high",
     "critical",
 }
+
+
+class FraudCaseNotFoundError(ValueError):
+    pass
+
+
+class CaseAssigneeNotFoundError(ValueError):
+    pass
+
+
+class InvalidCaseAssigneeError(ValueError):
+    pass
 
 
 def validate_case_status(case_status: str) -> None:
@@ -113,12 +127,28 @@ def list_fraud_cases(
     db: Session,
     limit: int = 20,
     case_status: str | None = None,
+    assigned_to_user_id: int | None = None,
+    unassigned: bool = False,
 ) -> list[FraudCaseReview]:
-    query = db.query(FraudCaseReview)
+    if assigned_to_user_id is not None and unassigned:
+        raise ValueError(
+            "assigned_to_user_id and unassigned cannot both be supplied."
+        )
+
+    query = db.query(FraudCaseReview).options(
+        selectinload(FraudCaseReview.assigned_to_user)
+    )
 
     if case_status is not None:
         validate_case_status(case_status)
         query = query.filter(FraudCaseReview.case_status == case_status)
+
+    if assigned_to_user_id is not None:
+        query = query.filter(
+            FraudCaseReview.assigned_to_user_id == assigned_to_user_id
+        )
+    elif unassigned:
+        query = query.filter(FraudCaseReview.assigned_to_user_id.is_(None))
 
     return query.order_by(desc(FraudCaseReview.created_at)).limit(limit).all()
 
@@ -253,3 +283,193 @@ def update_fraud_case(
     db.refresh(case)
 
     return case
+
+
+def assign_case(
+    db: Session,
+    *,
+    case_id: int,
+    assigned_to_user_id: int,
+    actor: User,
+) -> FraudCaseReview:
+    fraud_case = db.get(FraudCaseReview, case_id)
+
+    if fraud_case is None:
+        raise FraudCaseNotFoundError(f"Fraud case {case_id} not found.")
+
+    assignee = db.get(User, assigned_to_user_id)
+
+    if assignee is None:
+        raise CaseAssigneeNotFoundError(
+            f"User {assigned_to_user_id} not found."
+        )
+
+    if not assignee.is_active:
+        raise InvalidCaseAssigneeError("Inactive users cannot be assigned cases.")
+
+    if assignee.role != UserRole.FRAUD_ANALYST:
+        raise InvalidCaseAssigneeError(
+            "Cases can only be assigned to fraud analysts."
+        )
+
+    if fraud_case.assigned_to_user_id == assignee.id:
+        return fraud_case
+
+    previous_assignee = fraud_case.assigned_to_user
+    previous_assignee_id = fraud_case.assigned_to_user_id
+    previous_username = (
+        previous_assignee.username if previous_assignee is not None else None
+    )
+    event_type = (
+        CaseEvent.REASSIGNED
+        if previous_assignee_id is not None
+        else CaseEvent.ASSIGNED
+    )
+    audit_action = (
+        AuditAction.CASE_REASSIGNED
+        if previous_assignee_id is not None
+        else AuditAction.CASE_ASSIGNED
+    )
+
+    fraud_case.assigned_to_user = assignee
+
+    try:
+        create_case_history(
+            db=db,
+            case=fraud_case,
+            user=actor,
+            event_type=event_type,
+            details={
+                "old_assignee_user_id": previous_assignee_id,
+                "old_assignee_username": previous_username,
+                "new_assignee_user_id": assignee.id,
+                "new_assignee_username": assignee.username,
+            },
+            commit=False,
+        )
+        create_audit_log(
+            db=db,
+            action=audit_action,
+            status=AuditStatus.SUCCESS,
+            user=actor,
+            resource_type="fraud_case",
+            resource_id=fraud_case.id,
+            details={
+                "previous_assignee": previous_username,
+                "new_assignee": assignee.username,
+            },
+            commit=False,
+        )
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+
+    db.refresh(fraud_case)
+    return fraud_case
+
+
+def unassign_case(
+    db: Session,
+    *,
+    case_id: int,
+    actor: User,
+    reason: str | None = None,
+) -> FraudCaseReview:
+    fraud_case = db.get(FraudCaseReview, case_id)
+
+    if fraud_case is None:
+        raise FraudCaseNotFoundError(f"Fraud case {case_id} not found.")
+
+    if fraud_case.assigned_to_user_id is None:
+        return fraud_case
+
+    previous_assignee = fraud_case.assigned_to_user
+    previous_assignee_id = fraud_case.assigned_to_user_id
+    previous_username = (
+        previous_assignee.username if previous_assignee is not None else None
+    )
+    fraud_case.assigned_to_user = None
+
+    try:
+        create_case_history(
+            db=db,
+            case=fraud_case,
+            user=actor,
+            event_type=CaseEvent.UNASSIGNED,
+            details={
+                "old_assignee_user_id": previous_assignee_id,
+                "old_assignee_username": previous_username,
+                "new_assignee_user_id": None,
+                "new_assignee_username": None,
+                "reason": reason,
+            },
+            commit=False,
+        )
+        create_audit_log(
+            db=db,
+            action=AuditAction.CASE_UNASSIGNED,
+            status=AuditStatus.SUCCESS,
+            user=actor,
+            resource_type="fraud_case",
+            resource_id=fraud_case.id,
+            details={
+                "previous_assignee": previous_username,
+                "new_assignee": None,
+            },
+            commit=False,
+        )
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+
+    db.refresh(fraud_case)
+    return fraud_case
+
+
+def get_analyst_workloads(db: Session) -> list[dict[str, int | str | None]]:
+    open_cases = func.sum(
+        sql_case((FraudCaseReview.case_status == "open", 1), else_=0)
+    )
+    investigating_cases = func.sum(
+        sql_case(
+            (FraudCaseReview.case_status == "investigating", 1),
+            else_=0,
+        )
+    )
+    total_active_cases = open_cases + investigating_cases
+
+    rows = (
+        db.query(
+            User.id.label("analyst_id"),
+            User.username,
+            User.full_name,
+            open_cases.label("open_cases"),
+            investigating_cases.label("investigating_cases"),
+            total_active_cases.label("total_active_cases"),
+        )
+        .outerjoin(
+            FraudCaseReview,
+            FraudCaseReview.assigned_to_user_id == User.id,
+        )
+        .filter(
+            User.role == UserRole.FRAUD_ANALYST,
+            User.is_active.is_(True),
+        )
+        .group_by(User.id, User.username, User.full_name)
+        .order_by(total_active_cases.asc(), User.id.asc())
+        .all()
+    )
+
+    return [
+        {
+            "analyst_id": row.analyst_id,
+            "username": row.username,
+            "full_name": row.full_name,
+            "open_cases": row.open_cases,
+            "investigating_cases": row.investigating_cases,
+            "total_active_cases": row.total_active_cases,
+        }
+        for row in rows
+    ]

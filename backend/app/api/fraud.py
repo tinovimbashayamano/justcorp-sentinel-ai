@@ -177,13 +177,25 @@ def get_recent_fraud_cases(
     _: AdminAnalystOrAuditor,
     limit: int = Query(default=20, ge=1, le=100),
     case_status: str | None = Query(default=None),
+    assigned_to_user_id: int | None = Query(default=None, gt=0),
+    unassigned: bool = Query(default=False),
     db: Session = Depends(get_db),
 ):
+    if assigned_to_user_id is not None and unassigned:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "assigned_to_user_id and unassigned cannot both be supplied."
+            ),
+        )
+
     try:
         return list_fraud_cases(
             db=db,
             limit=limit,
             case_status=case_status,
+            assigned_to_user_id=assigned_to_user_id,
+            unassigned=unassigned,
         )
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error

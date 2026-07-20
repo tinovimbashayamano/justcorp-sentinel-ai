@@ -45,6 +45,7 @@ def create_audit_log(
     resource_id: str | int | None = None,
     request: Request | None = None,
     details: dict[str, Any] | None = None,
+    commit: bool = True,
 ) -> AuditLog:
     audit_log = AuditLog(
         user_id=user.id if user else None,
@@ -71,8 +72,12 @@ def create_audit_log(
     )
 
     db.add(audit_log)
-    db.commit()
-    db.refresh(audit_log)
+
+    if commit:
+        db.commit()
+        db.refresh(audit_log)
+    else:
+        db.flush()
 
     return audit_log
 

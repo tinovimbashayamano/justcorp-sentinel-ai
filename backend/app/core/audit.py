@@ -17,6 +17,9 @@ class AuditAction(StrEnum):
 
     CASE_CREATE = "case.create"
     CASE_UPDATE = "case.update"
+    CASE_ASSIGNED = "case.assignment.assigned"
+    CASE_REASSIGNED = "case.assignment.reassigned"
+    CASE_UNASSIGNED = "case.assignment.unassigned"
 
 
 class AuditStatus(StrEnum):

@@ -6,6 +6,8 @@ class CaseEvent(StrEnum):
     STATUS_CHANGED = "case.status_changed"
     PRIORITY_CHANGED = "case.priority_changed"
     ASSIGNED = "case.assigned"
+    UNASSIGNED = "case.unassigned"
+    REASSIGNED = "case.reassigned"
     COMMENT_ADDED = "case.comment_added"
     CLOSED = "case.closed"
     REOPENED = "case.reopened"

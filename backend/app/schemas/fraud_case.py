@@ -25,6 +25,17 @@ class FraudCaseUpdateRequest(BaseModel):
     reviewed_by: str | None = None
 
 
+class CaseAssignmentRequest(BaseModel):
+    assigned_to_user_id: int = Field(gt=0)
+
+
+class CaseUnassignmentRequest(BaseModel):
+    reason: str | None = Field(
+        default=None,
+        max_length=500,
+    )
+
+
 class FraudCaseResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -33,12 +44,25 @@ class FraudCaseResponse(BaseModel):
     case_status: str
     priority: str
     assigned_to: str | None
+    assigned_to_user_id: int | None = None
+    assigned_to_username: str | None = None
     closure_reason: str | None
     analyst_decision: str | None
     analyst_notes: str | None
     reviewed_by: str | None
     created_at: datetime
     updated_at: datetime
+
+
+class AnalystWorkloadResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    analyst_id: int
+    username: str
+    full_name: str | None = None
+    open_cases: int
+    investigating_cases: int
+    total_active_cases: int
 
 
 class CaseHistoryResponse(BaseModel):

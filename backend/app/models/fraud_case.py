@@ -1,7 +1,8 @@
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.db.session import Base
+from backend.app.models.user import User
 
 
 class FraudCaseReview(Base):
@@ -30,6 +31,19 @@ class FraudCaseReview(Base):
     assigned_to: Mapped[str | None] = mapped_column(
         String(100),
         nullable=True,
+    )
+
+    assigned_to_user_id: Mapped[int | None] = mapped_column(
+        ForeignKey(
+            "users.id",
+            ondelete="SET NULL",
+        ),
+        nullable=True,
+        index=True,
+    )
+
+    assigned_to_user: Mapped[User | None] = relationship(
+        foreign_keys=[assigned_to_user_id],
     )
 
     closure_reason: Mapped[str | None] = mapped_column(
@@ -64,3 +78,18 @@ class FraudCaseReview(Base):
         onupdate=func.now(),
         nullable=False,
     )
+
+    __table_args__ = (
+        Index(
+            "ix_fraud_case_reviews_assignee_status",
+            "assigned_to_user_id",
+            "case_status",
+        ),
+    )
+
+    @property
+    def assigned_to_username(self) -> str | None:
+        if self.assigned_to_user is None:
+            return None
+
+        return self.assigned_to_user.username
