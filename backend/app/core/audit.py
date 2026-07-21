@@ -26,6 +26,11 @@ class AuditAction(StrEnum):
     CASE_COMMENT_DELETE = "case.comment.delete"
     CASE_COMMENT_ACCESS_DENIED = "case.comment.access_denied"
 
+    CASE_EVIDENCE_UPLOAD = "case.evidence.upload"
+    CASE_EVIDENCE_DOWNLOAD = "case.evidence.download"
+    CASE_EVIDENCE_DELETE = "case.evidence.delete"
+    CASE_EVIDENCE_ACCESS_DENIED = "case.evidence.access_denied"
+
 
 class AuditStatus(StrEnum):
     SUCCESS = "success"

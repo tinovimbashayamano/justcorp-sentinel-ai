@@ -10,6 +10,8 @@ from backend.app.models.audit_log import AuditLog
 from backend.app.models.case_comment import CaseComment
 from backend.app.models.case_comment_revision import CaseCommentRevision
 from backend.app.models.case_history import CaseHistory
+from backend.app.models.case_evidence import CaseEvidence
+from backend.app.models.evidence_access_log import EvidenceAccessLog
 from backend.app.models.fraud_case import FraudCaseReview
 from backend.app.models.fraud_score import FraudScoreRecord
 from backend.app.models.refresh_token import RefreshToken
@@ -27,6 +29,8 @@ def init_db() -> None:
     print(f"Registered table: {CaseHistory.__tablename__}")
     print(f"Registered table: {CaseComment.__tablename__}")
     print(f"Registered table: {CaseCommentRevision.__tablename__}")
+    print(f"Registered table: {CaseEvidence.__tablename__}")
+    print(f"Registered table: {EvidenceAccessLog.__tablename__}")
 
 
 if __name__ == "__main__":

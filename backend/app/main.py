@@ -6,6 +6,7 @@ from backend.app.api.auth import router as auth_router
 from backend.app.api.case_assignments import router as case_assignments_router
 from backend.app.api.case_comments import router as case_comments_router
 from backend.app.api.case_history import router as case_history_router
+from backend.app.api.case_evidence import router as case_evidence_router
 from backend.app.api.fraud import router as fraud_router
 
 
@@ -22,6 +23,7 @@ app.include_router(auth_router)
 app.include_router(fraud_router)
 app.include_router(case_assignments_router)
 app.include_router(case_comments_router)
+app.include_router(case_evidence_router)
 app.include_router(admin_users_router)
 app.include_router(
     audit_logs_router,
