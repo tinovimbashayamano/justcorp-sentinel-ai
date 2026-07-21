@@ -256,6 +256,13 @@ reports/model_reports/*
 !reports/audit_reports/.gitkeep
 !reports/model_reports/.gitkeep
 
+# Manual API verification artifacts
+manual_test_files/
+
+# Runtime evidence files
+storage/evidence/*
+!storage/evidence/.gitkeep
+
 # OS/editor files
 .DS_Store
 Thumbs.db
