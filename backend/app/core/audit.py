@@ -31,6 +31,17 @@ class AuditAction(StrEnum):
     CASE_EVIDENCE_DELETE = "case.evidence.delete"
     CASE_EVIDENCE_ACCESS_DENIED = "case.evidence.access_denied"
 
+    INVESTIGATION_TASK_CREATED = "investigation_task.created"
+    INVESTIGATION_TASK_UPDATED = "investigation_task.updated"
+    INVESTIGATION_TASK_ASSIGNED = "investigation_task.assigned"
+    INVESTIGATION_TASK_REASSIGNED = "investigation_task.reassigned"
+    INVESTIGATION_TASK_UNASSIGNED = "investigation_task.unassigned"
+    INVESTIGATION_TASK_STATUS_CHANGED = "investigation_task.status_changed"
+    INVESTIGATION_TASK_COMPLETED = "investigation_task.completed"
+    INVESTIGATION_TASK_CANCELLED = "investigation_task.cancelled"
+    INVESTIGATION_TASK_DELETED = "investigation_task.deleted"
+    INVESTIGATION_TASK_VIEWED = "investigation_task.viewed"
+
 
 class AuditStatus(StrEnum):
     SUCCESS = "success"

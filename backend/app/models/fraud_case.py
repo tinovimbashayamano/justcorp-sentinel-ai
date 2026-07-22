@@ -10,6 +10,7 @@ from backend.app.models.user import User
 if TYPE_CHECKING:
     from backend.app.models.case_comment import CaseComment
     from backend.app.models.case_evidence import CaseEvidence
+    from backend.app.models.investigation_task import InvestigationTask
 
 
 class FraudCaseReview(Base):
@@ -60,6 +61,13 @@ class FraudCaseReview(Base):
     )
 
     evidence: Mapped[list["CaseEvidence"]] = relationship(
+        back_populates="case",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+    investigation_tasks: Mapped[list["InvestigationTask"]] = relationship(
+        "InvestigationTask",
         back_populates="case",
         cascade="all, delete-orphan",
         passive_deletes=True,

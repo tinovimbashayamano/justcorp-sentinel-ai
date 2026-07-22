@@ -8,6 +8,7 @@ from backend.app.api.case_comments import router as case_comments_router
 from backend.app.api.case_history import router as case_history_router
 from backend.app.api.case_evidence import router as case_evidence_router
 from backend.app.api.fraud import router as fraud_router
+from backend.app.api.investigation_tasks import router as investigation_tasks_router
 
 
 app = FastAPI(
@@ -31,6 +32,10 @@ app.include_router(
 )
 app.include_router(
     case_history_router,
+    prefix="/api/v1",
+)
+app.include_router(
+    investigation_tasks_router,
     prefix="/api/v1",
 )
 
