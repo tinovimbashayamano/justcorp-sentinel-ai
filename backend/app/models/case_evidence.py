@@ -15,10 +15,10 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.db.session import Base
+from backend.app.models.evidence_access_log import EvidenceAccessLog
 
 
 if TYPE_CHECKING:
-    from backend.app.models.evidence_access_log import EvidenceAccessLog
     from backend.app.models.fraud_case import FraudCaseReview
     from backend.app.models.user import User
 

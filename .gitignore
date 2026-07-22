@@ -263,6 +263,10 @@ manual_test_files/
 storage/evidence/*
 !storage/evidence/.gitkeep
 
+# Generated fraud-case reports
+storage/reports/*
+!storage/reports/.gitkeep
+
 # OS/editor files
 .DS_Store
 Thumbs.db

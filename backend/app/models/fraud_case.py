@@ -4,6 +4,7 @@ from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.db.session import Base
+from backend.app.models.generated_report import GeneratedReport
 from backend.app.models.user import User
 
 
@@ -69,6 +70,13 @@ class FraudCaseReview(Base):
     investigation_tasks: Mapped[list["InvestigationTask"]] = relationship(
         "InvestigationTask",
         back_populates="case",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+    generated_reports: Mapped[list["GeneratedReport"]] = relationship(
+        "GeneratedReport",
+        back_populates="fraud_case",
         cascade="all, delete-orphan",
         passive_deletes=True,
     )

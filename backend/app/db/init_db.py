@@ -14,6 +14,7 @@ from backend.app.models.case_evidence import CaseEvidence
 from backend.app.models.evidence_access_log import EvidenceAccessLog
 from backend.app.models.fraud_case import FraudCaseReview
 from backend.app.models.fraud_score import FraudScoreRecord
+from backend.app.models.generated_report import GeneratedReport
 from backend.app.models.investigation_task import InvestigationTask
 from backend.app.models.refresh_token import RefreshToken
 from backend.app.models.user import User
@@ -33,6 +34,7 @@ def init_db() -> None:
     print(f"Registered table: {CaseEvidence.__tablename__}")
     print(f"Registered table: {EvidenceAccessLog.__tablename__}")
     print(f"Registered table: {InvestigationTask.__tablename__}")
+    print(f"Registered table: {GeneratedReport.__tablename__}")
 
 
 if __name__ == "__main__":

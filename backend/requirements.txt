@@ -11,6 +11,7 @@ pwdlib[argon2]
 python-jose[cryptography]
 python-multipart
 email-validator
+reportlab>=4.2,<5.0
 
 pandas
 numpy
