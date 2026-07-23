@@ -20,6 +20,17 @@ from backend.app.services.reporting_service import (
     ReportingService,
     ReportingServiceError,
 )
+from backend.app.services.notification_service import (
+    NotificationConflictError,
+    NotificationNotFoundError,
+    NotificationPermissionError,
+    NotificationService,
+    NotificationValidationError,
+)
+from backend.app.services.notification_email_service import (
+    EmailProcessingSummary,
+    NotificationEmailService,
+)
 
 
 __all__ = [
@@ -28,6 +39,13 @@ __all__ = [
     "GeneratedReportPermissionError",
     "GeneratedReportUnavailableError",
     "InvalidReportPayloadError",
+    "EmailProcessingSummary",
+    "NotificationConflictError",
+    "NotificationEmailService",
+    "NotificationNotFoundError",
+    "NotificationPermissionError",
+    "NotificationService",
+    "NotificationValidationError",
     "ReportCaseNotFoundError",
     "ReportDataError",
     "ReportDataPermissionError",

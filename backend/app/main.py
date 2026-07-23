@@ -9,6 +9,7 @@ from backend.app.api.case_history import router as case_history_router
 from backend.app.api.case_evidence import router as case_evidence_router
 from backend.app.api.fraud import router as fraud_router
 from backend.app.api.investigation_tasks import router as investigation_tasks_router
+from backend.app.api.notifications import router as notifications_router
 from backend.app.api.reports import router as reports_router
 
 
@@ -41,6 +42,10 @@ app.include_router(
 )
 app.include_router(
     reports_router,
+    prefix="/api/v1",
+)
+app.include_router(
+    notifications_router,
     prefix="/api/v1",
 )
 
