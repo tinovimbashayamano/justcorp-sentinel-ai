@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from backend.app.api.analytics import router as analytics_router
 from backend.app.api.admin_users import router as admin_users_router
 from backend.app.api.audit_logs import router as audit_logs_router
 from backend.app.api.auth import router as auth_router
@@ -46,6 +47,10 @@ app.include_router(
 )
 app.include_router(
     notifications_router,
+    prefix="/api/v1",
+)
+app.include_router(
+    analytics_router,
     prefix="/api/v1",
 )
 

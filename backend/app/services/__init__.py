@@ -1,3 +1,8 @@
+from backend.app.services.analytics_service import (
+    AnalyticsService,
+    AnalyticsServiceError,
+    AnalyticsValidationError,
+)
 from backend.app.services.report_data_service import (
     ReportCaseNotFoundError,
     ReportDataError,
@@ -34,6 +39,9 @@ from backend.app.services.notification_email_service import (
 
 
 __all__ = [
+    "AnalyticsService",
+    "AnalyticsServiceError",
+    "AnalyticsValidationError",
     "ExportedReportFile",
     "GeneratedReportNotFoundError",
     "GeneratedReportPermissionError",
