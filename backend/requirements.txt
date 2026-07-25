@@ -18,6 +18,7 @@ numpy
 scikit-learn
 lightgbm
 joblib
+shap
 
 pytest
 httpx
