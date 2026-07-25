@@ -13,6 +13,12 @@ from backend.app.schemas.fraud import (
     FraudScoreRequest,
     FraudScoreResponse,
 )
+from backend.app.schemas.explainability import (
+    ExplainabilityHealthResponse,
+    ExplainabilityRequest,
+    ExplainabilityResponse,
+    ScoreAndExplainResponse,
+)
 from backend.app.schemas.fraud_case import (
     FraudCaseCreateRequest,
     FraudCaseResponse,
@@ -34,6 +40,9 @@ from backend.app.services.fraud_scoring_service import (
     get_model_health,
     score_transaction,
 )
+from backend.app.services.explainability_service import (
+    explainability_service,
+)
 
 
 router = APIRouter(
@@ -50,6 +59,102 @@ def fraud_model_health(
         return get_model_health()
     except RuntimeError as error:
         raise HTTPException(status_code=503, detail=str(error)) from error
+
+
+@router.get(
+    "/explainability/health",
+    response_model=ExplainabilityHealthResponse,
+)
+def explainability_health(
+    _: AnyAuthenticatedUser,
+):
+    try:
+        return explainability_service.health()
+    except RuntimeError as error:
+        raise HTTPException(
+            status_code=503,
+            detail=str(error),
+        ) from error
+
+
+@router.post(
+    "/explain",
+    response_model=ExplainabilityResponse,
+)
+def explain_fraud_transaction(
+    payload: ExplainabilityRequest,
+    current_user: AdminOrAnalyst,
+):
+    try:
+        return explainability_service.explain(
+            payload.features,
+            top_features=payload.top_features,
+        )
+    except RuntimeError as error:
+        raise HTTPException(
+            status_code=503,
+            detail=str(error),
+        ) from error
+    except Exception as error:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unable to explain transaction: {error}",
+        ) from error
+
+
+@router.post(
+    "/score-and-explain",
+    response_model=ScoreAndExplainResponse,
+)
+def score_and_explain_fraud_transaction(
+    payload: ExplainabilityRequest,
+    request: Request,
+    current_user: AdminOrAnalyst,
+    db: Session = Depends(get_db),
+):
+    try:
+        result = explainability_service.score_and_explain(
+            payload.features,
+            top_features=payload.top_features,
+        )
+
+        safely_create_audit_log(
+            db=db,
+            action=AuditAction.FRAUD_SCORE,
+            status=AuditStatus.SUCCESS,
+            user=current_user,
+            resource_type="transaction",
+            resource_id=payload.transaction_id,
+            request=request,
+            details={
+                "fraud_prediction": result[
+                    "prediction"
+                ]["fraud_prediction"],
+                "fraud_probability": result[
+                    "prediction"
+                ]["fraud_probability"],
+                "explanation_requested": True,
+                "requested_top_features": payload.top_features,
+            },
+        )
+
+        return {
+            "transaction_id": payload.transaction_id,
+            **result,
+        }
+    except RuntimeError as error:
+        raise HTTPException(
+            status_code=503,
+            detail=str(error),
+        ) from error
+    except Exception as error:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Unable to score and explain transaction: "
+                f"{error}"
+            ),
+        ) from error
 
 
 @router.post("/score", response_model=FraudScoreResponse)
