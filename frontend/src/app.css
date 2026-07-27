@@ -1,0 +1,55 @@
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.app-navigation {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 24px;
+  border-bottom: 1px solid #dfe5ee;
+  background: #ffffff;
+  font-weight: 700;
+}
+
+.app-navigation a {
+  color: #41516a;
+  text-decoration: none;
+}
+
+.app-navigation a.active {
+  color: #1f4fd1;
+}
+
+.home-page {
+  width: min(780px, calc(100% - 32px));
+  margin: 80px auto;
+  padding: 40px;
+  border: 1px solid #dfe5ee;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 12px 32px rgb(15 23 42 / 8%);
+}
+
+.home-page h1 {
+  margin: 0;
+  font-size: 3rem;
+}
+
+.home-page p:not(.app-eyebrow) {
+  color: #657086;
+  font-size: 1.1rem;
+}
+
+.app-eyebrow {
+  margin: 0 0 8px;
+  color: #1f4fd1;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
