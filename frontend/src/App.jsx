@@ -4,7 +4,10 @@ import {
   Routes,
 } from "react-router";
 
-import { CaseInvestigationWorkspace } from "./features/cases";
+import {
+  CaseInvestigationWorkspace,
+  SmartInvestigationQueuePage,
+} from "./features/cases";
 import { ExplainabilityWorkspace } from "./features/explainability";
 import "./app.css";
 
@@ -49,6 +52,7 @@ export default function App() {
   const canReviewCases = REVIEW_ROLES.has(
     String(readStoredRole() || "").toLowerCase(),
   );
+  const canInvestigate = canReviewCases;
   const canViewExplainability = canReviewCases;
 
   return (
@@ -59,6 +63,11 @@ export default function App() {
       >
         <NavLink to="/">Sentinel AI</NavLink>
         <div className="app-navigation__links">
+          {canInvestigate ? (
+            <NavLink to="/fraud/investigations">
+              Investigations
+            </NavLink>
+          ) : null}
           {canReviewCases ? (
             <NavLink to="/fraud/cases">
               Review Queue
@@ -76,6 +85,10 @@ export default function App() {
         <Route
           path="/fraud/cases"
           element={<CaseInvestigationWorkspace />}
+        />
+        <Route
+          path="/fraud/investigations"
+          element={<SmartInvestigationQueuePage />}
         />
         <Route
           path="/fraud/explainability"
