@@ -25,6 +25,12 @@ body {
   color: #1f4fd1;
 }
 
+.app-navigation__links {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
 .home-page {
   width: min(780px, calc(100% - 32px));
   margin: 80px auto;

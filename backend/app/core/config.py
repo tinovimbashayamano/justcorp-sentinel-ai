@@ -43,6 +43,11 @@ class Settings(BaseSettings):
         alias="REFRESH_TOKEN_EXPIRE_DAYS",
     )
 
+    frontend_origin: str = Field(
+        default="http://localhost:5173",
+        alias="FRONTEND_ORIGIN",
+    )
+
 
 @lru_cache
 def get_settings() -> Settings:

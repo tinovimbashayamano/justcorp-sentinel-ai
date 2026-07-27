@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.api.analytics import router as analytics_router
 from backend.app.api.admin_users import router as admin_users_router
@@ -16,6 +17,7 @@ from backend.app.api.investigation_tasks import router as investigation_tasks_ro
 from backend.app.api.model_insights import router as model_insight_router
 from backend.app.api.notifications import router as notifications_router
 from backend.app.api.reports import router as reports_router
+from backend.app.core.config import settings
 
 
 app = FastAPI(
@@ -25,6 +27,13 @@ app = FastAPI(
         " risk scoring."
     ),
     version="0.1.0",
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[settings.frontend_origin],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(auth_router)

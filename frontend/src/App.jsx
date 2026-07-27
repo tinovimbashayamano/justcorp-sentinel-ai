@@ -4,10 +4,11 @@ import {
   Routes,
 } from "react-router";
 
+import { CaseInvestigationWorkspace } from "./features/cases";
 import { ExplainabilityWorkspace } from "./features/explainability";
 import "./app.css";
 
-const EXPLAINABILITY_ROLES = new Set([
+const REVIEW_ROLES = new Set([
   "admin",
   "fraud_analyst",
 ]);
@@ -45,10 +46,10 @@ function HomePage() {
 }
 
 export default function App() {
-  const canViewExplainability =
-    EXPLAINABILITY_ROLES.has(
-      String(readStoredRole() || "").toLowerCase(),
-    );
+  const canReviewCases = REVIEW_ROLES.has(
+    String(readStoredRole() || "").toLowerCase(),
+  );
+  const canViewExplainability = canReviewCases;
 
   return (
     <>
@@ -57,14 +58,25 @@ export default function App() {
         aria-label="Primary navigation"
       >
         <NavLink to="/">Sentinel AI</NavLink>
-        {canViewExplainability ? (
-          <NavLink to="/fraud/explainability">
-            Explainability
-          </NavLink>
-        ) : null}
+        <div className="app-navigation__links">
+          {canReviewCases ? (
+            <NavLink to="/fraud/cases">
+              Review Queue
+            </NavLink>
+          ) : null}
+          {canViewExplainability ? (
+            <NavLink to="/fraud/explainability">
+              Explainability
+            </NavLink>
+          ) : null}
+        </div>
       </nav>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route
+          path="/fraud/cases"
+          element={<CaseInvestigationWorkspace />}
+        />
         <Route
           path="/fraud/explainability"
           element={<ExplainabilityWorkspace />}
