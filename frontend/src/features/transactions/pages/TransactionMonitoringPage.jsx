@@ -1,0 +1,10 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router";
+import TransactionDetailDrawer from "../components/TransactionDetailDrawer";
+import TransactionFilters from "../components/TransactionFilters";
+import TransactionKpiCards from "../components/TransactionKpiCards";
+import TransactionTable from "../components/TransactionTable";
+import RiskDistributionBars from "../components/RiskDistributionBars";
+import { useTransactionMonitoring } from "../hooks/useTransactionMonitoring";
+import "../styles/transaction-monitoring.css";
+export default function TransactionMonitoringPage(){const navigate=useNavigate();const s=useTransactionMonitoring();useEffect(()=>{s.loadTransactions().catch(()=>undefined)},[s.loadTransactions]);return <main className="transaction-monitoring-page"><header className="transaction-page-header"><div><p className="transaction-eyebrow">JustCorp Sentinel AI</p><h1>Transaction Monitoring</h1><p>Review scored transactions, prioritize high-risk activity, and move directly into investigation or explainability.</p></div><button type="button" onClick={s.loadTransactions}>Refresh</button></header>{s.error?<div className="transaction-error" role="alert">{s.error.message}</div>:null}<TransactionKpiCards summary={s.summary} onRiskSelect={(risk)=>s.updateFilters({risk})}/><div className="transaction-dashboard-grid"><RiskDistributionBars summary={s.summary} onSelect={(risk)=>s.updateFilters({risk})}/><TransactionFilters filters={s.filters} sort={s.sort} onFiltersChange={s.updateFilters} onSortChange={s.setSort} onClear={s.clearFilters}/></div><TransactionTable transactions={s.visibleTransactions} selectedId={s.selectedTransaction?.id} loading={s.loading} onSelect={s.setSelectedTransaction}/><TransactionDetailDrawer transaction={s.selectedTransaction} onClose={()=>s.setSelectedTransaction(null)} onInvestigate={(t)=>navigate('/fraud/investigations',{state:{fraudScoreRecordId:t.id}})} onExplain={(t)=>navigate(`/fraud/explainability?scoreId=${t.id}`)}/></main>}

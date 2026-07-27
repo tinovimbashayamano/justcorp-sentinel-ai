@@ -9,6 +9,7 @@ import {
   SmartInvestigationQueuePage,
 } from "./features/cases";
 import { ExplainabilityWorkspace } from "./features/explainability";
+import { TransactionMonitoringPage } from "./features/transactions";
 import "./app.css";
 
 const REVIEW_ROLES = new Set([
@@ -52,6 +53,7 @@ export default function App() {
   const canReviewCases = REVIEW_ROLES.has(
     String(readStoredRole() || "").toLowerCase(),
   );
+  const canMonitorTransactions = canReviewCases;
   const canInvestigate = canReviewCases;
   const canViewExplainability = canReviewCases;
 
@@ -63,6 +65,11 @@ export default function App() {
       >
         <NavLink to="/">Sentinel AI</NavLink>
         <div className="app-navigation__links">
+          {canMonitorTransactions ? (
+            <NavLink to="/fraud/transactions">
+              Transactions
+            </NavLink>
+          ) : null}
           {canInvestigate ? (
             <NavLink to="/fraud/investigations">
               Investigations
@@ -85,6 +92,10 @@ export default function App() {
         <Route
           path="/fraud/cases"
           element={<CaseInvestigationWorkspace />}
+        />
+        <Route
+          path="/fraud/transactions"
+          element={<TransactionMonitoringPage />}
         />
         <Route
           path="/fraud/investigations"
