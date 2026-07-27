@@ -19,6 +19,7 @@ scikit-learn
 lightgbm
 joblib
 shap
+matplotlib>=3.10,<4.0
 
 pytest
 httpx

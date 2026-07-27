@@ -137,6 +137,28 @@ def test_invalid_feature_raises_not_found_error(service):
         service.get_feature("unknown")
 
 
+def test_dependence_data_pairs_feature_and_shap_values(service):
+    response = service.get_dependence_data(
+        "TransactionAmt",
+        limit=2,
+    )
+
+    assert response == {
+        "feature": "TransactionAmt",
+        "points": [
+            {
+                "feature_value": 10.0,
+                "shap_value": 0.4,
+            },
+            {
+                "feature_value": 20.0,
+                "shap_value": 0.2,
+            },
+        ],
+        "sample_count": 2,
+    }
+
+
 def test_top_positive_features_are_ranked_by_positive_shap(service):
     response = service.top_positive(limit=2)
 

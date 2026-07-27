@@ -609,6 +609,52 @@ class ModelInsightService:
 
         return self.get_feature_detail(feature_name)
 
+    def get_dependence_data(
+        self,
+        feature_name: str,
+        *,
+        limit: int = 500,
+    ) -> dict[str, Any]:
+        """Return paired transformed values and SHAP effects for a feature."""
+
+        cache = self._get_cache()
+        feature_index = cache.feature_indices.get(feature_name)
+
+        if feature_index is None:
+            raise ModelInsightNotFoundError(
+                "Unknown transformed model feature: "
+                f"{feature_name}."
+            )
+
+        resolved_limit = self._validate_limit(
+            limit,
+            cache.samples,
+        )
+        feature_values = cache.transformed_values[
+            :resolved_limit,
+            feature_index,
+        ]
+        shap_values = cache.shap_values[
+            :resolved_limit,
+            feature_index,
+        ]
+
+        return {
+            "feature": feature_name,
+            "points": [
+                {
+                    "feature_value": float(feature_value),
+                    "shap_value": float(shap_value),
+                }
+                for feature_value, shap_value in zip(
+                    feature_values,
+                    shap_values,
+                    strict=True,
+                )
+            ],
+            "sample_count": resolved_limit,
+        }
+
     def get_top_features(
         self,
         direction: str,

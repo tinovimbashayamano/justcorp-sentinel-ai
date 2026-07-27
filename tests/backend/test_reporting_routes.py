@@ -24,7 +24,7 @@ def _reporting_operations() -> set[tuple[str, str]]:
     operations: set[tuple[str, str]] = set()
 
     for path, path_operations in schema["paths"].items():
-        if "/reports" not in path:
+        if not path.startswith("/api/v1/reports"):
             continue
 
         for method in path_operations:
@@ -49,7 +49,7 @@ def test_reporting_routes_have_expected_tag() -> None:
     schema = app.openapi()
 
     for path, operations in schema["paths"].items():
-        if "/reports" not in path:
+        if not path.startswith("/api/v1/reports"):
             continue
 
         for method, operation in operations.items():

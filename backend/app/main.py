@@ -8,6 +8,9 @@ from backend.app.api.case_assignments import router as case_assignments_router
 from backend.app.api.case_comments import router as case_comments_router
 from backend.app.api.case_history import router as case_history_router
 from backend.app.api.case_evidence import router as case_evidence_router
+from backend.app.api.explainability_visualizations import (
+    router as explainability_visualization_router,
+)
 from backend.app.api.fraud import router as fraud_router
 from backend.app.api.investigation_tasks import router as investigation_tasks_router
 from backend.app.api.model_insights import router as model_insight_router
@@ -31,6 +34,7 @@ app.include_router(case_comments_router)
 app.include_router(case_evidence_router)
 app.include_router(admin_users_router)
 app.include_router(model_insight_router)
+app.include_router(explainability_visualization_router)
 app.include_router(
     audit_logs_router,
     prefix="/api/v1",
