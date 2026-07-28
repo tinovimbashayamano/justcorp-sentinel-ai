@@ -14,6 +14,7 @@ import {
   useAlertCenter,
 } from "./features/alerts";
 import { ExplainabilityWorkspace } from "./features/explainability";
+import { InvestigationWorkspacePage } from "./features/investigationWorkspace";
 import { TransactionExplorerPage } from "./features/transactionExplorer";
 import { TransactionMonitoringPage } from "./features/transactions";
 import "./app.css";
@@ -167,6 +168,10 @@ export default function App() {
         <Route
           path="/fraud/investigations"
           element={<SmartInvestigationQueuePage />}
+        />
+        <Route
+          path="/fraud/investigations/:caseId"
+          element={<InvestigationWorkspacePage />}
         />
         <Route
           path="/fraud/explainability"

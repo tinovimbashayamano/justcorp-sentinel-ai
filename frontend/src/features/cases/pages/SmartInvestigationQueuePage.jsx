@@ -3,7 +3,10 @@ import {
   useRef,
   useState,
 } from "react";
-import { useLocation } from "react-router";
+import {
+  useLocation,
+  useNavigate,
+} from "react-router";
 
 import CaseEditor from "../components/CaseEditor";
 import CaseExplainabilityLink from "../components/CaseExplainabilityLink";
@@ -18,6 +21,7 @@ import "../styles/smart-case-queue.css";
 
 export default function SmartInvestigationQueuePage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const routedScoreId =
     location.state?.fraudScoreRecordId ?? null;
   const handledRoutedScoreId = useRef(null);
@@ -70,11 +74,20 @@ export default function SmartInvestigationQueuePage() {
             ? "A new investigation case was created."
             : "The existing investigation case was opened.",
         );
+        navigate(
+          `/fraud/investigations/${result.caseRecord.id}`,
+          { replace: true },
+        );
       })
       .catch(() => {
         handledRoutedScoreId.current = null;
       });
-  }, [openOrCreateCase, routedScoreId, scores]);
+  }, [
+    navigate,
+    openOrCreateCase,
+    routedScoreId,
+    scores,
+  ]);
 
   async function handleInvestigate(scoreId) {
     try {
@@ -83,6 +96,9 @@ export default function SmartInvestigationQueuePage() {
         result.created
           ? "A new investigation case was created."
           : "The existing investigation case was opened."
+      );
+      navigate(
+        `/fraud/investigations/${result.caseRecord.id}`,
       );
     } catch {
       setNotice("");

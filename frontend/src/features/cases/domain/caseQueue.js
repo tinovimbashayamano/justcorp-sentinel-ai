@@ -1,5 +1,11 @@
 export const CASE_STATUSES = [
+  "new",
   "open",
+  "assigned",
+  "investigating",
+  "pending_customer",
+  "escalated",
+  "resolved",
   "under_review",
   "confirmed_fraud",
   "false_positive",
@@ -186,7 +192,13 @@ export function paginate(items, page, pageSize) {
 export function summarizeCases(cases = []) {
   const summary = {
     total: cases.length,
+    new: 0,
     open: 0,
+    assigned: 0,
+    investigating: 0,
+    pending_customer: 0,
+    escalated: 0,
+    resolved: 0,
     under_review: 0,
     confirmed_fraud: 0,
     false_positive: 0,

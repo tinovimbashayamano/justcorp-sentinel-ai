@@ -33,12 +33,18 @@ class AnalyticsRepository:
 
     CLOSED_CASE_STATUSES = {
         "closed",
+        "resolved",
         "confirmed_fraud",
         "false_positive",
     }
 
     OPEN_CASE_STATUSES = {
+        "new",
         "open",
+        "assigned",
+        "investigating",
+        "pending_customer",
+        "escalated",
         "under_review",
     }
 

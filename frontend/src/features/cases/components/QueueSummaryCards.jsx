@@ -1,5 +1,11 @@
 const CARDS = [
+  ["new", "New"],
   ["open", "Open"],
+  ["assigned", "Assigned"],
+  ["investigating", "Investigating"],
+  ["pending_customer", "Pending customer"],
+  ["escalated", "Escalated"],
+  ["resolved", "Resolved"],
   ["under_review", "Under review"],
   ["confirmed_fraud", "Confirmed fraud"],
   ["false_positive", "False positives"],

@@ -15,8 +15,13 @@ from backend.app.services.case_history_service import create_case_history
 
 
 VALID_CASE_STATUSES = {
+    "new",
     "open",
+    "assigned",
     "investigating",
+    "pending_customer",
+    "escalated",
+    "resolved",
     "under_review",
     "confirmed_fraud",
     "false_positive",
@@ -429,8 +434,24 @@ def unassign_case(
 
 
 def get_analyst_workloads(db: Session) -> list[dict[str, int | str | None]]:
+    active_non_investigating_statuses = {
+        "new",
+        "open",
+        "assigned",
+        "pending_customer",
+        "escalated",
+        "under_review",
+    }
     open_cases = func.sum(
-        sql_case((FraudCaseReview.case_status == "open", 1), else_=0)
+        sql_case(
+            (
+                FraudCaseReview.case_status.in_(
+                    active_non_investigating_statuses
+                ),
+                1,
+            ),
+            else_=0,
+        )
     )
     investigating_cases = func.sum(
         sql_case(

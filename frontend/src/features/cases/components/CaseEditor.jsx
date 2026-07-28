@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
 
 const STATUSES = [
+  "new",
   "open",
+  "assigned",
   "investigating",
+  "pending_customer",
+  "escalated",
+  "resolved",
   "under_review",
   "confirmed_fraud",
   "false_positive",

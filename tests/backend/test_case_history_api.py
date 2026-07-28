@@ -185,6 +185,31 @@ def test_status_change_creates_history():
     }
 
 
+@pytest.mark.parametrize(
+    "case_status",
+    [
+        "new",
+        "assigned",
+        "pending_customer",
+        "escalated",
+        "resolved",
+    ],
+)
+def test_enterprise_workspace_statuses_are_accepted(case_status):
+    case, analyst = create_case(
+        username=f"status-{case_status}",
+    )
+
+    response = update_case(
+        case["id"],
+        analyst,
+        {"case_status": case_status},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["case_status"] == case_status
+
+
 def test_priority_change_creates_history():
     case, analyst = create_case()
 
