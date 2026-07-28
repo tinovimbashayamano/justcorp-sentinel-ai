@@ -1,4 +1,9 @@
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { useLocation } from "react-router";
 
 import CaseEditor from "../components/CaseEditor";
 import CaseExplainabilityLink from "../components/CaseExplainabilityLink";
@@ -12,6 +17,10 @@ import { useSmartCaseQueue } from "../hooks/useSmartCaseQueue";
 import "../styles/smart-case-queue.css";
 
 export default function SmartInvestigationQueuePage() {
+  const location = useLocation();
+  const routedScoreId =
+    location.state?.fraudScoreRecordId ?? null;
+  const handledRoutedScoreId = useRef(null);
   const {
     cases,
     scores,
@@ -40,6 +49,32 @@ export default function SmartInvestigationQueuePage() {
   useEffect(() => {
     loadQueue().catch(() => undefined);
   }, [loadQueue]);
+
+  useEffect(() => {
+    if (
+      routedScoreId == null ||
+      handledRoutedScoreId.current === routedScoreId ||
+      !scores.some(
+        (score) =>
+          String(score.id) === String(routedScoreId),
+      )
+    ) {
+      return;
+    }
+
+    handledRoutedScoreId.current = routedScoreId;
+    openOrCreateCase(routedScoreId)
+      .then((result) => {
+        setNotice(
+          result.created
+            ? "A new investigation case was created."
+            : "The existing investigation case was opened.",
+        );
+      })
+      .catch(() => {
+        handledRoutedScoreId.current = null;
+      });
+  }, [openOrCreateCase, routedScoreId, scores]);
 
   async function handleInvestigate(scoreId) {
     try {

@@ -20,5 +20,5 @@ export function useTransactionMonitoring() {
   const summary = useMemo(() => summarizeTransactions(transactions), [transactions]);
   const updateFilters = useCallback((patch) => setFilters((current) => ({ ...current, ...patch })), []);
   const clearFilters = useCallback(() => { setFilters(DEFAULT_FILTERS); setSort(DEFAULT_SORT); }, []);
-  return { visibleTransactions, selectedTransaction, filters, sort, summary, loading, error, loadTransactions, setSelectedTransaction, updateFilters, clearFilters, setSort };
+  return { transactions, visibleTransactions, selectedTransaction, filters, sort, summary, loading, error, loadTransactions, setSelectedTransaction, updateFilters, clearFilters, setSort };
 }

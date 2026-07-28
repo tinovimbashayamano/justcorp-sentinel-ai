@@ -1,4 +1,8 @@
-import { useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 const DEFAULT_FEATURES = JSON.stringify(
   {
@@ -11,17 +15,24 @@ const DEFAULT_FEATURES = JSON.stringify(
 );
 
 export default function TransactionExplanationForm({
+  initialTransactionId = "",
   onSubmit,
   loading,
 }) {
   const [transactionId, setTransactionId] = useState(
-    "demo-transaction-001",
+    initialTransactionId || "demo-transaction-001",
   );
   const [topFeatures, setTopFeatures] = useState(10);
   const [featureText, setFeatureText] =
     useState(DEFAULT_FEATURES);
   const [validationError, setValidationError] =
     useState("");
+
+  useEffect(() => {
+    if (initialTransactionId) {
+      setTransactionId(String(initialTransactionId));
+    }
+  }, [initialTransactionId]);
 
   const parsedFeatures = useMemo(() => {
     try {

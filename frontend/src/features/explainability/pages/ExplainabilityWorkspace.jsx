@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router";
 
 import ContributionTable from "../components/ContributionTable";
 import GlobalImportanceTable from "../components/GlobalImportanceTable";
@@ -11,6 +12,9 @@ import { useExplainabilityWorkspace } from "../hooks/useExplainabilityWorkspace"
 import "../styles/explainability-workspace.css";
 
 export default function ExplainabilityWorkspace() {
+  const location = useLocation();
+  const routedTransactionId =
+    location.state?.transactionId || "";
   const {
     data,
     loading,
@@ -66,6 +70,7 @@ export default function ExplainabilityWorkspace() {
 
       <div className="workspace-grid workspace-grid--two">
         <TransactionExplanationForm
+          initialTransactionId={routedTransactionId}
           onSubmit={handleExplain}
           loading={
             loading.local ||

@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
 import {
   describe,
   expect,
@@ -36,7 +37,11 @@ vi.mock(
 
 describe("ExplainabilityWorkspace", () => {
   it("renders the workspace", () => {
-    render(<ExplainabilityWorkspace />);
+    render(
+      <MemoryRouter>
+        <ExplainabilityWorkspace />
+      </MemoryRouter>,
+    );
 
     expect(
       screen.getByRole("heading", {

@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
 import { describe, expect, it, vi } from "vitest";
 
 import SmartInvestigationQueuePage from "../pages/SmartInvestigationQueuePage";
@@ -52,7 +53,11 @@ vi.mock("../hooks/useSmartCaseQueue", () => ({
 
 describe("SmartInvestigationQueuePage", () => {
   it("renders the queue workspace", () => {
-    render(<SmartInvestigationQueuePage />);
+    render(
+      <MemoryRouter>
+        <SmartInvestigationQueuePage />
+      </MemoryRouter>,
+    );
 
     expect(
       screen.getByRole("heading", {
