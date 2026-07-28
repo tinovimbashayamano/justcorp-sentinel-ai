@@ -14,6 +14,7 @@ import {
   useAlertCenter,
 } from "./features/alerts";
 import { ExplainabilityWorkspace } from "./features/explainability";
+import { TransactionExplorerPage } from "./features/transactionExplorer";
 import { TransactionMonitoringPage } from "./features/transactions";
 import "./app.css";
 
@@ -74,6 +75,7 @@ export default function App() {
     String(readStoredRole() || "").toLowerCase(),
   );
   const canViewAlerts = canReviewCases;
+  const canExploreTransactions = canReviewCases;
   const canMonitorTransactions = canReviewCases;
   const canInvestigate = canReviewCases;
   const canViewExplainability = canReviewCases;
@@ -106,6 +108,11 @@ export default function App() {
           {canMonitorTransactions ? (
             <NavLink to="/fraud/transactions">
               Transactions
+            </NavLink>
+          ) : null}
+          {canExploreTransactions ? (
+            <NavLink to="/fraud/explorer">
+              Explorer
             </NavLink>
           ) : null}
           {canInvestigate ? (
@@ -152,6 +159,10 @@ export default function App() {
         <Route
           path="/fraud/transactions"
           element={<TransactionMonitoringPage />}
+        />
+        <Route
+          path="/fraud/explorer"
+          element={<TransactionExplorerPage />}
         />
         <Route
           path="/fraud/investigations"
