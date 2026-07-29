@@ -18,6 +18,7 @@ import {
 import { AdminPortalPage } from "./features/admin";
 import { ExplainabilityWorkspace } from "./features/explainability";
 import { InvestigationWorkspacePage } from "./features/investigationWorkspace";
+import { ReportingDashboardPage } from "./features/reporting";
 import { TransactionExplorerPage } from "./features/transactionExplorer";
 import { TransactionMonitoringPage } from "./features/transactions";
 import "./app.css";
@@ -25,6 +26,14 @@ import "./app.css";
 const REVIEW_ROLES = new Set([
   "admin",
   "fraud_analyst",
+]);
+
+const REPORT_ROLES = new Set([
+  "admin",
+  "administrator",
+  "risk_manager",
+  "manager",
+  "auditor",
 ]);
 
 function readStoredRole() {
@@ -80,7 +89,8 @@ export default function App() {
   const storedRole = String(
     readStoredRole() || "",
   ).toLowerCase();
-  const isAdministrator = storedRole === "admin";
+  const isAdministrator =
+    storedRole === "admin" || storedRole === "administrator";
   const canReviewCases = REVIEW_ROLES.has(
     storedRole,
   );
@@ -89,6 +99,7 @@ export default function App() {
   const canMonitorTransactions = canReviewCases;
   const canInvestigate = canReviewCases;
   const canViewExplainability = canReviewCases;
+  const canViewReports = REPORT_ROLES.has(storedRole);
   const alertCenter = useAlertCenter({
     enabled: canViewAlerts,
   });
@@ -144,6 +155,11 @@ export default function App() {
               Explainability
             </NavLink>
           ) : null}
+          {canViewReports ? (
+            <NavLink to="/reports">
+              Reports
+            </NavLink>
+          ) : null}
           {isAdministrator ? (
             <NavLink to="/admin">
               Administration
@@ -194,6 +210,16 @@ export default function App() {
         <Route
           path="/fraud/explainability"
           element={<ExplainabilityWorkspace />}
+        />
+        <Route
+          path="/reports"
+          element={
+            canViewReports ? (
+              <ReportingDashboardPage />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
         />
         <Route
           path="/admin"
