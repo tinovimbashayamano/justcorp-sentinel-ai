@@ -18,6 +18,7 @@ import {
 import { AdminPortalPage } from "./features/admin";
 import { ExplainabilityWorkspace } from "./features/explainability";
 import { InvestigationWorkspacePage } from "./features/investigationWorkspace";
+import { ModelGovernancePage } from "./features/modelGovernance";
 import { OperationsDashboardPage } from "./features/operations";
 import { PreferencesPage } from "./features/preferences";
 import { ReportingDashboardPage } from "./features/reporting";
@@ -43,6 +44,18 @@ const OPERATIONS_ROLES = new Set([
   "administrator",
   "technical_lead",
   "auditor",
+]);
+
+const MODEL_GOVERNANCE_ROLES = new Set([
+  "admin",
+  "administrator",
+  "data_scientist",
+  "risk_manager",
+  "manager",
+  "compliance_officer",
+  "technical_lead",
+  "auditor",
+  "fraud_analyst",
 ]);
 
 function readStoredRole() {
@@ -118,6 +131,8 @@ export default function App() {
   const canViewExplainability = canReviewCases;
   const canViewReports = REPORT_ROLES.has(storedRole);
   const canViewOperations = OPERATIONS_ROLES.has(storedRole);
+  const canViewModelGovernance =
+    isAuthenticated && MODEL_GOVERNANCE_ROLES.has(storedRole);
   const alertCenter = useAlertCenter({
     enabled: canViewAlerts,
   });
@@ -181,6 +196,11 @@ export default function App() {
           {canViewOperations ? (
             <NavLink to="/operations">
               Operations
+            </NavLink>
+          ) : null}
+          {canViewModelGovernance ? (
+            <NavLink to="/model-governance">
+              Model Governance
             </NavLink>
           ) : null}
           {isAuthenticated ? (
@@ -264,6 +284,16 @@ export default function App() {
           element={
             isAuthenticated ? (
               <PreferencesPage />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route
+          path="/model-governance"
+          element={
+            canViewModelGovernance ? (
+              <ModelGovernancePage />
             ) : (
               <Navigate to="/" replace />
             )
