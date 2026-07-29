@@ -1,8 +1,10 @@
 import {
   Link,
+  Navigate,
   NavLink,
   Route,
   Routes,
+  useLocation,
 } from "react-router";
 
 import {
@@ -13,6 +15,7 @@ import {
   FraudAlertCenterPage,
   useAlertCenter,
 } from "./features/alerts";
+import { AdminPortalPage } from "./features/admin";
 import { ExplainabilityWorkspace } from "./features/explainability";
 import { InvestigationWorkspacePage } from "./features/investigationWorkspace";
 import { TransactionExplorerPage } from "./features/transactionExplorer";
@@ -72,8 +75,14 @@ function HomePage({
 }
 
 export default function App() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname === "/admin";
+  const storedRole = String(
+    readStoredRole() || "",
+  ).toLowerCase();
+  const isAdministrator = storedRole === "admin";
   const canReviewCases = REVIEW_ROLES.has(
-    String(readStoredRole() || "").toLowerCase(),
+    storedRole,
   );
   const canViewAlerts = canReviewCases;
   const canExploreTransactions = canReviewCases;
@@ -87,7 +96,11 @@ export default function App() {
   return (
     <>
       <nav
-        className="app-navigation"
+        className={
+          isAdminRoute
+            ? "app-navigation app-navigation--hidden"
+            : "app-navigation"
+        }
         aria-label="Primary navigation"
       >
         <NavLink to="/">Sentinel AI</NavLink>
@@ -129,6 +142,11 @@ export default function App() {
           {canViewExplainability ? (
             <NavLink to="/fraud/explainability">
               Explainability
+            </NavLink>
+          ) : null}
+          {isAdministrator ? (
+            <NavLink to="/admin">
+              Administration
             </NavLink>
           ) : null}
         </div>
@@ -176,6 +194,16 @@ export default function App() {
         <Route
           path="/fraud/explainability"
           element={<ExplainabilityWorkspace />}
+        />
+        <Route
+          path="/admin"
+          element={
+            isAdministrator ? (
+              <AdminPortalPage />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
         />
         <Route
           path="*"

@@ -16,6 +16,10 @@ body {
   font-weight: 700;
 }
 
+.app-navigation--hidden {
+  display: none;
+}
+
 .app-navigation a {
   color: #41516a;
   text-decoration: none;
