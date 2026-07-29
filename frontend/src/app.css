@@ -1,7 +1,48 @@
+:root {
+  --app-accent: #1f4fd1;
+  --app-background: #f5f7fb;
+  --app-surface: #ffffff;
+  --app-text: #172033;
+  --app-muted: #657086;
+  color-scheme: light;
+}
+
+html[data-accent="green"] {
+  --app-accent: #16804b;
+}
+
+html[data-accent="purple"] {
+  --app-accent: #7046c7;
+}
+
+html[data-accent="orange"] {
+  --app-accent: #c46616;
+}
+
+html[data-theme="dark"] {
+  --app-background: #0f172a;
+  --app-surface: #172033;
+  --app-text: #e7edf7;
+  --app-muted: #a9b5c8;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme="system"] {
+    --app-background: #0f172a;
+    --app-surface: #172033;
+    --app-text: #e7edf7;
+    --app-muted: #a9b5c8;
+    color-scheme: dark;
+  }
+}
+
 body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+  background: var(--app-background);
+  color: var(--app-text);
 }
 
 .app-navigation {
@@ -12,7 +53,7 @@ body {
   gap: 24px;
   padding: 0 24px;
   border-bottom: 1px solid #dfe5ee;
-  background: #ffffff;
+  background: var(--app-surface);
   font-weight: 700;
 }
 
@@ -26,7 +67,7 @@ body {
 }
 
 .app-navigation a.active {
-  color: #1f4fd1;
+  color: var(--app-accent);
 }
 
 .app-navigation__links {
@@ -65,7 +106,7 @@ body {
   padding: 40px;
   border: 1px solid #dfe5ee;
   border-radius: 16px;
-  background: #ffffff;
+  background: var(--app-surface);
   box-shadow: 0 12px 32px rgb(15 23 42 / 8%);
 }
 
@@ -75,7 +116,7 @@ body {
 }
 
 .home-page p:not(.app-eyebrow) {
-  color: #657086;
+  color: var(--app-muted);
   font-size: 1.1rem;
 }
 
@@ -98,7 +139,7 @@ body {
 }
 
 .home-page__alert-cards a:hover {
-  border-color: #1f4fd1;
+  border-color: var(--app-accent);
 }
 
 .home-page__alert-cards strong {
@@ -108,7 +149,7 @@ body {
 
 .app-eyebrow {
   margin: 0 0 8px;
-  color: #1f4fd1;
+  color: var(--app-accent);
   font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.1em;

@@ -19,6 +19,7 @@ import { AdminPortalPage } from "./features/admin";
 import { ExplainabilityWorkspace } from "./features/explainability";
 import { InvestigationWorkspacePage } from "./features/investigationWorkspace";
 import { OperationsDashboardPage } from "./features/operations";
+import { PreferencesPage } from "./features/preferences";
 import { ReportingDashboardPage } from "./features/reporting";
 import { TransactionExplorerPage } from "./features/transactionExplorer";
 import { TransactionMonitoringPage } from "./features/transactions";
@@ -61,6 +62,13 @@ function readStoredRole() {
   }
 }
 
+function hasStoredAccessToken() {
+  return Boolean(
+    window.localStorage.getItem("access_token") ||
+      window.localStorage.getItem("accessToken"),
+  );
+}
+
 function HomePage({
   alertSummary,
   canViewAlerts,
@@ -99,6 +107,7 @@ export default function App() {
   ).toLowerCase();
   const isAdministrator =
     storedRole === "admin" || storedRole === "administrator";
+  const isAuthenticated = hasStoredAccessToken();
   const canReviewCases = REVIEW_ROLES.has(
     storedRole,
   );
@@ -174,6 +183,11 @@ export default function App() {
               Operations
             </NavLink>
           ) : null}
+          {isAuthenticated ? (
+            <NavLink to="/preferences">
+              Preferences
+            </NavLink>
+          ) : null}
           {isAdministrator ? (
             <NavLink to="/admin">
               Administration
@@ -240,6 +254,16 @@ export default function App() {
           element={
             canViewOperations ? (
               <OperationsDashboardPage />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route
+          path="/preferences"
+          element={
+            isAuthenticated ? (
+              <PreferencesPage />
             ) : (
               <Navigate to="/" replace />
             )
