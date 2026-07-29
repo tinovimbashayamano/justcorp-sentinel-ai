@@ -18,6 +18,7 @@ import {
 import { AdminPortalPage } from "./features/admin";
 import { ExplainabilityWorkspace } from "./features/explainability";
 import { InvestigationWorkspacePage } from "./features/investigationWorkspace";
+import { OperationsDashboardPage } from "./features/operations";
 import { ReportingDashboardPage } from "./features/reporting";
 import { TransactionExplorerPage } from "./features/transactionExplorer";
 import { TransactionMonitoringPage } from "./features/transactions";
@@ -33,6 +34,13 @@ const REPORT_ROLES = new Set([
   "administrator",
   "risk_manager",
   "manager",
+  "auditor",
+]);
+
+const OPERATIONS_ROLES = new Set([
+  "admin",
+  "administrator",
+  "technical_lead",
   "auditor",
 ]);
 
@@ -100,6 +108,7 @@ export default function App() {
   const canInvestigate = canReviewCases;
   const canViewExplainability = canReviewCases;
   const canViewReports = REPORT_ROLES.has(storedRole);
+  const canViewOperations = OPERATIONS_ROLES.has(storedRole);
   const alertCenter = useAlertCenter({
     enabled: canViewAlerts,
   });
@@ -160,6 +169,11 @@ export default function App() {
               Reports
             </NavLink>
           ) : null}
+          {canViewOperations ? (
+            <NavLink to="/operations">
+              Operations
+            </NavLink>
+          ) : null}
           {isAdministrator ? (
             <NavLink to="/admin">
               Administration
@@ -216,6 +230,16 @@ export default function App() {
           element={
             canViewReports ? (
               <ReportingDashboardPage />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route
+          path="/operations"
+          element={
+            canViewOperations ? (
+              <OperationsDashboardPage />
             ) : (
               <Navigate to="/" replace />
             )
