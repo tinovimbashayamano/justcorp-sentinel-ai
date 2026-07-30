@@ -22,6 +22,7 @@ import { ModelGovernancePage } from "./features/modelGovernance";
 import { OperationsDashboardPage } from "./features/operations";
 import { PreferencesPage } from "./features/preferences";
 import { ReportingDashboardPage } from "./features/reporting";
+import { ReportExportDashboard } from "./features/reports";
 import { TransactionExplorerPage } from "./features/transactionExplorer";
 import { TransactionMonitoringPage } from "./features/transactions";
 import "./app.css";
@@ -189,9 +190,14 @@ export default function App() {
             </NavLink>
           ) : null}
           {canViewReports ? (
-            <NavLink to="/reports">
-              Reports
-            </NavLink>
+            <>
+              <NavLink to="/reports">
+                Reports
+              </NavLink>
+              <NavLink to="/reports/export">
+                Report Exports
+              </NavLink>
+            </>
           ) : null}
           {canViewOperations ? (
             <NavLink to="/operations">
@@ -264,6 +270,16 @@ export default function App() {
           element={
             canViewReports ? (
               <ReportingDashboardPage />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route
+          path="/reports/export"
+          element={
+            canViewReports ? (
+              <ReportExportDashboard />
             ) : (
               <Navigate to="/" replace />
             )
