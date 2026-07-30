@@ -16,6 +16,7 @@ import {
   useAlertCenter,
 } from "./features/alerts";
 import { AdminPortalPage } from "./features/admin";
+import { AuditTrailPage } from "./features/auditTrail";
 import { ExplainabilityWorkspace } from "./features/explainability";
 import { InvestigationWorkspacePage } from "./features/investigationWorkspace";
 import { ModelGovernancePage } from "./features/modelGovernance";
@@ -44,6 +45,12 @@ const OPERATIONS_ROLES = new Set([
   "admin",
   "administrator",
   "technical_lead",
+  "auditor",
+]);
+
+const AUDIT_TRAIL_ROLES = new Set([
+  "admin",
+  "administrator",
   "auditor",
 ]);
 
@@ -132,6 +139,8 @@ export default function App() {
   const canViewExplainability = canReviewCases;
   const canViewReports = REPORT_ROLES.has(storedRole);
   const canViewOperations = OPERATIONS_ROLES.has(storedRole);
+  const canViewAuditTrail =
+    isAuthenticated && AUDIT_TRAIL_ROLES.has(storedRole);
   const canViewModelGovernance =
     isAuthenticated && MODEL_GOVERNANCE_ROLES.has(storedRole);
   const alertCenter = useAlertCenter({
@@ -202,6 +211,11 @@ export default function App() {
           {canViewOperations ? (
             <NavLink to="/operations">
               Operations
+            </NavLink>
+          ) : null}
+          {canViewAuditTrail ? (
+            <NavLink to="/audit-trail">
+              Audit Trail
             </NavLink>
           ) : null}
           {canViewModelGovernance ? (
@@ -290,6 +304,16 @@ export default function App() {
           element={
             canViewOperations ? (
               <OperationsDashboardPage />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route
+          path="/audit-trail"
+          element={
+            canViewAuditTrail ? (
+              <AuditTrailPage />
             ) : (
               <Navigate to="/" replace />
             )

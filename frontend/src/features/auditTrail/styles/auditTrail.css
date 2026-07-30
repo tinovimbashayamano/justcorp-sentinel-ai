@@ -1,0 +1,28 @@
+.audit-page{width:min(1600px,calc(100% - 32px));margin:auto;padding:32px 0 64px}
+.audit-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:24px;border:1px solid #dce4ef;border-radius:16px;background:#fff}
+.audit-hero p,.audit-panel-header p{margin:0 0 6px;color:#3154c8;font-size:.76rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.audit-hero h1,.audit-panel-header h2{margin:0}.audit-hero span{color:#64748b}
+.audit-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:16px}
+.audit-summary article{display:grid;gap:6px;padding:16px;border:1px solid #dce4ef;border-radius:12px;background:#fff}
+.audit-summary span{color:#64748b;font-size:.82rem}.audit-summary strong{font-size:1.25rem}
+.audit-presets,.audit-export-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.audit-panel{margin-top:18px;padding:20px;border:1px solid #dce4ef;border-radius:14px;background:#fff}
+.audit-panel-header{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.audit-filter-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:16px}
+.audit-filter-grid label{display:grid;gap:7px}.audit-filter-grid .wide{grid-column:span 2}
+.audit-filter-grid input,.audit-filter-grid select{padding:10px;border:1px solid #cfd8e6;border-radius:8px;background:#fff}
+.audit-overview-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.audit-main-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(360px,.8fr);gap:18px;align-items:start}
+.audit-table-scroll{overflow:auto;margin-top:16px}.audit-table-scroll table{width:100%;border-collapse:collapse}.audit-table-scroll th,.audit-table-scroll td{padding:11px 12px;border-bottom:1px solid #e8edf4;text-align:left;vertical-align:top;white-space:nowrap}
+.audit-table-scroll tbody tr{cursor:pointer}.audit-table-scroll tbody tr.selected{background:#f3f6ff}
+.audit-details{position:sticky;top:20px;max-height:calc(100vh - 40px);overflow:auto}.audit-details-empty{color:#64748b}
+.audit-badges{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.audit-metadata{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.audit-metadata div{padding:11px;border:1px solid #e5eaf1;border-radius:9px}.audit-metadata dt{font-size:.74rem;color:#64748b}.audit-metadata dd{margin:4px 0 0;font-weight:700;word-break:break-word}
+.audit-subpanel{margin-top:18px;padding-top:16px;border-top:1px solid #e5eaf1}.audit-subpanel h3{margin-top:0}.audit-json,.audit-subpanel pre{white-space:pre-wrap;word-break:break-word;font-size:.78rem}
+.audit-pagination{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 4px}.audit-pagination>div{display:flex;align-items:center;gap:10px}
+.audit-error,.audit-progress{margin-top:14px;padding:12px 14px;border-radius:8px}.audit-error{background:#ffe5e5;color:#9f1d1d}.audit-progress{background:#eef4ff;color:#2746a5}
+.audit-empty{padding:24px;text-align:center;color:#64748b}
+.audit-capability-note{align-self:center;color:#92400e;font-size:.78rem}.audit-unavailable{padding:10px 12px;border:1px solid #f5d18a;border-radius:8px;background:#fffbeb;color:#92400e}.audit-integrity-unavailable{color:#92400e;font-weight:700}
+.audit-severity-critical,.audit-outcome-failure,.audit-outcome-denied,.audit-integrity-integrity-warning{color:#a12626;font-weight:700}.audit-severity-high,.audit-outcome-warning{color:#a85d00;font-weight:700}.audit-severity-medium,.audit-integrity-unverified{color:#7a5d00}.audit-severity-low,.audit-severity-informational,.audit-outcome-success,.audit-integrity-verified{color:#157347}.audit-integrity-legacy-record,.audit-outcome-partial,.audit-outcome-unknown{color:#64748b}
+@media(max-width:1200px){.audit-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.audit-main-grid{grid-template-columns:1fr}.audit-details{position:static;max-height:none}}
+@media(max-width:800px){.audit-hero,.audit-panel-header,.audit-pagination{align-items:stretch;flex-direction:column}.audit-summary,.audit-overview-grid,.audit-filter-grid,.audit-metadata{grid-template-columns:1fr}.audit-filter-grid .wide{grid-column:auto}}
