@@ -1,0 +1,69 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download verified production model
+        env:
+          MODEL_ARTIFACT_URL: ${{ secrets.MODEL_ARTIFACT_URL }}
+          MODEL_ARTIFACT_SHA256: ${{ vars.MODEL_ARTIFACT_SHA256 }}
+        run: |
+          test -n "$MODEL_ARTIFACT_URL"
+          test -n "$MODEL_ARTIFACT_SHA256"
+          mkdir -p ml/model_artifacts
+          curl --fail --location --retry 3 \
+            "$MODEL_ARTIFACT_URL" \
+            --output ml/model_artifacts/lightgbm_fraud_model.joblib
+          echo "$MODEL_ARTIFACT_SHA256  ml/model_artifacts/lightgbm_fraud_model.joblib" \
+            | sha256sum --check -
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend release image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: backend/Dockerfile.prod
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/sentinel-backend:${{ github.ref_name }}
+            ghcr.io/${{ github.repository_owner }}/sentinel-backend:latest
+          provenance: true
+          sbom: true
+
+      - name: Build and push frontend release image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: frontend/Dockerfile.prod
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/sentinel-frontend:${{ github.ref_name }}
+            ghcr.io/${{ github.repository_owner }}/sentinel-frontend:latest
+          provenance: true
+          sbom: true
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "${GITHUB_REF_NAME}" --generate-notes --verify-tag

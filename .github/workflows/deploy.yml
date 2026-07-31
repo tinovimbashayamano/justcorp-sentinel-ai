@@ -1,0 +1,49 @@
+name: Deploy Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Image tag to deploy
+        required: true
+        default: latest
+  workflow_run:
+    workflows: ["Release"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: ${{ vars.PRODUCTION_URL }}
+
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PRODUCTION_HOST }}
+          username: ${{ secrets.PRODUCTION_USER }}
+          key: ${{ secrets.PRODUCTION_SSH_KEY }}
+          port: ${{ secrets.PRODUCTION_SSH_PORT || 22 }}
+          script: |
+            set -eu
+            cd "${{ vars.PRODUCTION_APP_DIR }}"
+            export CONTAINER_REGISTRY="ghcr.io/${{ github.repository_owner }}"
+            export IMAGE_TAG="${{ inputs.image_tag || 'latest' }}"
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ github.repository_owner }}" --password-stdin
+            docker compose --env-file .env.production -f docker-compose.prod.yml pull
+            docker compose --env-file .env.production -f docker-compose.prod.yml up -d --remove-orphans
+            docker compose --env-file .env.production -f docker-compose.prod.yml ps
+            curl --fail --retry 12 --retry-delay 5 "${{ vars.PRODUCTION_URL }}/health"

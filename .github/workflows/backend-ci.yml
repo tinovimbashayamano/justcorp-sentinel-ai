@@ -1,0 +1,140 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main, dev, "feature/**", "fix/**"]
+    paths:
+      - "backend/**"
+      - "ml/**"
+      - "tests/backend/**"
+      - "tests/conftest.py"
+      - "alembic.ini"
+      - ".github/workflows/backend-ci.yml"
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - "backend/**"
+      - "ml/**"
+      - "tests/backend/**"
+      - "tests/conftest.py"
+      - "alembic.ini"
+      - ".github/workflows/backend-ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"
+  PYTHONPATH: ${{ github.workspace }}
+  APP_ENV: test
+  JWT_SECRET_KEY: test-only-jwt-secret-key-that-is-long-enough-for-ci
+  DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/justcorp_test
+  REDIS_URL: redis://localhost:6379/0
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: justcorp_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d justcorp_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7.4-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements.prod.txt
+
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install ruff black pytest-cov pip-audit
+
+      - name: Determine changed Python files
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$GITHUB_SHA"
+          else
+            git diff-tree --no-commit-id --name-only -r "$GITHUB_SHA"
+          fi \
+            | grep -E '^(backend|ml)/.*\.py$' \
+            > changed-python-files.txt || true
+          echo "Python files subject to Ruff and Black:"
+          cat changed-python-files.txt
+
+      - name: Ruff lint changed Python files
+        run: |
+          if [ -s changed-python-files.txt ]; then
+            xargs --no-run-if-empty ruff check < changed-python-files.txt
+          else
+            echo "No changed Python files."
+          fi
+
+      - name: Black format check changed Python files
+        run: |
+          if [ -s changed-python-files.txt ]; then
+            xargs --no-run-if-empty black --check < changed-python-files.txt
+          else
+            echo "No changed Python files."
+          fi
+
+      - name: Run database migrations
+        run: alembic upgrade head
+
+      - name: Run backend tests with coverage
+        run: >-
+          pytest tests/backend
+          --cov=backend.app
+          --cov-report=term-missing
+          --cov-report=xml:coverage.xml
+          --cov-fail-under=70
+
+      - name: Audit Python dependencies
+        run: pip-audit -r backend/requirements.prod.txt
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-coverage-${{ github.sha }}
+          path: coverage.xml
+          if-no-files-found: warn
+          retention-days: 14

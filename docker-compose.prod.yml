@@ -6,7 +6,7 @@ services:
       dockerfile: frontend/Dockerfile.prod
       args:
         VITE_API_BASE_URL: /
-    image: justcorp/sentinel-frontend:${IMAGE_TAG:-latest}
+    image: ${CONTAINER_REGISTRY:-justcorp}/sentinel-frontend:${IMAGE_TAG:-latest}
     restart: unless-stopped
     ports:
       - "${FRONTEND_PORT:-8080}:8080"
@@ -46,7 +46,7 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile.prod
-    image: justcorp/sentinel-backend:${IMAGE_TAG:-latest}
+    image: ${CONTAINER_REGISTRY:-justcorp}/sentinel-backend:${IMAGE_TAG:-latest}
     restart: unless-stopped
     env_file: [.env.production]
     environment:

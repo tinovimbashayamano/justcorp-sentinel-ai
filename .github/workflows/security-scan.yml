@@ -1,0 +1,114 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+  schedule:
+    - cron: "20 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Scan repository for secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  python-security:
+    runs-on: ubuntu-latest
+    env:
+      SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements.prod.txt
+
+      - name: Install scanners
+        run: pip install bandit pip-audit safety
+
+      - name: Bandit source scan
+        run: bandit -r backend/app -f json -o bandit-report.json
+
+      - name: Python dependency audit
+        run: pip-audit -r backend/requirements.prod.txt -f json -o pip-audit-report.json
+
+      - name: Safety dependency scan
+        if: env.SAFETY_API_KEY != ''
+        run: >-
+          safety --key "$SAFETY_API_KEY"
+          scan --target backend
+          --output json
+          --save-as json safety-report.json
+
+      - name: Warn when Safety is not configured
+        if: env.SAFETY_API_KEY == ''
+        run: echo "::warning::SAFETY_API_KEY is not configured; Safety scan skipped."
+
+      - name: Upload Python security reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: python-security-${{ github.sha }}
+          path: |
+            bandit-report.json
+            pip-audit-report.json
+            safety-report.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  frontend-security:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Audit all frontend dependencies
+        run: npm audit --audit-level=high
+
+  filesystem-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Trivy repository scan
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      - name: Upload SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-results.sarif
