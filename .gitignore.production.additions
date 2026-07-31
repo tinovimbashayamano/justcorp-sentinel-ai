@@ -1,0 +1,6 @@
+.env.production
+.env.production.local
+*.pem
+*.key
+secrets/
+docker-secrets/

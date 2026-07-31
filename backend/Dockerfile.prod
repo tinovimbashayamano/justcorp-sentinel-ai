@@ -1,0 +1,42 @@
+FROM python:3.11-slim AS builder
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1 PIP_NO_CACHE_DIR=1 PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+WORKDIR /build
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+COPY backend/requirements.prod.txt ./requirements.txt
+RUN pip install --upgrade pip setuptools wheel \
+    && pip install --no-cache-dir -r requirements.txt
+
+FROM python:3.11-slim AS runtime
+ARG APP_UID=10001
+ARG APP_GID=10001
+ENV PATH="/opt/venv/bin:$PATH" \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    APP_ENV=production \
+    PORT=8000 \
+    WEB_CONCURRENCY=4 \
+    GUNICORN_TIMEOUT=120 \
+    HOME=/tmp \
+    XDG_CACHE_HOME=/tmp/.cache \
+    MPLCONFIGDIR=/tmp/matplotlib \
+    GUNICORN_CMD_ARGS="--worker-tmp-dir /tmp"
+WORKDIR /app
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y netcat-openbsd \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --gid "${APP_GID}" app \
+    && useradd --uid "${APP_UID}" --gid "${APP_GID}" --create-home --shell /usr/sbin/nologin app \
+    && mkdir -p /app/.matplotlib-cache /app/logs /app/ml/model_artifacts /app/storage/evidence /app/storage/reports \
+    && chown -R app:app /app
+COPY --from=builder /opt/venv /opt/venv
+COPY --chown=app:app backend /app/backend
+COPY --chown=app:app ml/model_artifacts /app/ml/model_artifacts
+COPY --chown=app:app alembic.ini /app/alembic.ini
+COPY --chown=app:app backend/scripts/start-prod.sh /usr/local/bin/start-prod.sh
+RUN chmod 0555 /usr/local/bin/start-prod.sh
+USER app
+RUN MPLCONFIGDIR=/app/.matplotlib-cache python -c "from matplotlib import font_manager; assert font_manager.fontManager.ttflist"
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)" || exit 1
+ENTRYPOINT ["/usr/local/bin/start-prod.sh"]

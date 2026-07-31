@@ -1,0 +1,10 @@
+.git
+.env
+.env.*
+node_modules/
+dist/
+coverage/
+.vite/
+npm-debug.log*
+src/**/*.test.*
+src/**/__tests__/

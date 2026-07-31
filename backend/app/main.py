@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from backend.app.api.analytics import router as analytics_router
 from backend.app.api.admin_users import router as admin_users_router
@@ -27,6 +28,10 @@ app = FastAPI(
         " risk scoring."
     ),
     version="0.1.0",
+)
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=settings.trusted_host_list,
 )
 app.add_middleware(
     CORSMiddleware,

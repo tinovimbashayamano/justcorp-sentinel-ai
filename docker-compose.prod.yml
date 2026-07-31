@@ -1,0 +1,135 @@
+name: justcorp-sentinel-ai-prod
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile.prod
+      args:
+        VITE_API_BASE_URL: /
+    image: justcorp/sentinel-frontend:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-8080}:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks: [frontend_network, backend_network]
+    read_only: true
+    volumes:
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 67108864
+      - type: tmpfs
+        target: /var/cache/nginx
+        tmpfs:
+          size: 67108864
+      - type: tmpfs
+        target: /var/run
+        tmpfs:
+          size: 16777216
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging: &default-logging
+      driver: json-file
+      options: {max-size: "10m", max-file: "5"}
+    deploy:
+      resources:
+        limits: {cpus: "0.50", memory: 256M}
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.prod
+    image: justcorp/sentinel-backend:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    env_file: [.env.production]
+    environment:
+      APP_ENV: production
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      FRAUD_MODEL_PATH: /app/ml/model_artifacts/lightgbm_fraud_model.joblib
+      HOME: /tmp
+      XDG_CACHE_HOME: /tmp/.cache
+      MPLCONFIGDIR: /tmp/matplotlib
+      GUNICORN_CMD_ARGS: --worker-tmp-dir /tmp
+    expose: ["8000"]
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    networks: [backend_network, database_network]
+    volumes:
+      - model_artifacts:/app/ml/model_artifacts
+      - evidence_uploads:/app/storage/evidence
+      - report_exports:/app/storage/reports
+      - application_logs:/app/logs
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 268435456
+    read_only: true
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
+    logging: *default-logging
+    deploy:
+      resources:
+        limits: {cpus: "1.50", memory: 2G}
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    env_file: [.env.production]
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    expose: ["5432"]
+    networks: [database_network]
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    logging: *default-logging
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    env_file: [.env.production]
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}"]
+    expose: ["6379"]
+    networks: [backend_network, database_network]
+    volumes: [redis_data:/data]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD}\" ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    logging: *default-logging
+networks:
+  frontend_network: {driver: bridge}
+  backend_network: {driver: bridge}
+  database_network: {driver: bridge, internal: true}
+volumes:
+  postgres_data:
+  redis_data:
+  model_artifacts:
+  evidence_uploads:
+  report_exports:
+  application_logs:

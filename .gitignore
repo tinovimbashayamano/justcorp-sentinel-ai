@@ -222,6 +222,13 @@ __marimo__/
 .env
 .env.*
 !.env.example
+!.env.production.example
+.env.production
+.env.production.local
+*.pem
+*.key
+secrets/
+docker-secrets/
 
 # Python
 __pycache__/

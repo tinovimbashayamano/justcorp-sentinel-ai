@@ -48,6 +48,19 @@ class Settings(BaseSettings):
         alias="FRONTEND_ORIGIN",
     )
 
+    trusted_hosts: str = Field(
+        default="localhost,127.0.0.1,testserver",
+        alias="TRUSTED_HOSTS",
+    )
+
+    @property
+    def trusted_host_list(self) -> list[str]:
+        return [
+            host.strip()
+            for host in self.trusted_hosts.split(",")
+            if host.strip()
+        ]
+
 
 @lru_cache
 def get_settings() -> Settings:

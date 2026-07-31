@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import {
   Link,
   Navigate,
@@ -7,26 +8,52 @@ import {
   useLocation,
 } from "react-router";
 
-import {
-  CaseInvestigationWorkspace,
-  SmartInvestigationQueuePage,
-} from "./features/cases";
-import {
-  FraudAlertCenterPage,
-  useAlertCenter,
-} from "./features/alerts";
-import { AdminPortalPage } from "./features/admin";
-import { AuditTrailPage } from "./features/auditTrail";
-import { ExplainabilityWorkspace } from "./features/explainability";
-import { InvestigationWorkspacePage } from "./features/investigationWorkspace";
-import { ModelGovernancePage } from "./features/modelGovernance";
-import { OperationsDashboardPage } from "./features/operations";
-import { PreferencesPage } from "./features/preferences";
-import { ReportingDashboardPage } from "./features/reporting";
-import { ReportExportDashboard } from "./features/reports";
-import { TransactionExplorerPage } from "./features/transactionExplorer";
-import { TransactionMonitoringPage } from "./features/transactions";
+import { useAlertCenter } from "./features/alerts/hooks/useAlertCenter";
+import PageLoading from "./components/PageLoading";
 import "./app.css";
+
+const CaseInvestigationWorkspace = lazy(() =>
+  import("./features/cases/pages/CaseInvestigationWorkspace")
+);
+const SmartInvestigationQueuePage = lazy(() =>
+  import("./features/cases/pages/SmartInvestigationQueuePage")
+);
+const FraudAlertCenterPage = lazy(() =>
+  import("./features/alerts/pages/FraudAlertCenterPage")
+);
+const AdminPortalPage = lazy(() =>
+  import("./features/admin/pages/AdminPortalPage")
+);
+const AuditTrailPage = lazy(() =>
+  import("./features/auditTrail/pages/AuditTrailPage")
+);
+const ExplainabilityWorkspace = lazy(() =>
+  import("./features/explainability/pages/ExplainabilityWorkspace")
+);
+const InvestigationWorkspacePage = lazy(() =>
+  import("./features/investigationWorkspace/pages/InvestigationWorkspacePage")
+);
+const ModelGovernancePage = lazy(() =>
+  import("./features/modelGovernance/pages/ModelGovernancePage")
+);
+const OperationsDashboardPage = lazy(() =>
+  import("./features/operations/pages/OperationsDashboardPage")
+);
+const PreferencesPage = lazy(() =>
+  import("./features/preferences/pages/PreferencesPage")
+);
+const ReportingDashboardPage = lazy(() =>
+  import("./features/reporting/pages/ReportingDashboardPage")
+);
+const ReportExportDashboard = lazy(() =>
+  import("./features/reports/pages/ReportExportDashboard")
+);
+const TransactionExplorerPage = lazy(() =>
+  import("./features/transactionExplorer/pages/TransactionExplorerPage")
+);
+const TransactionMonitoringPage = lazy(() =>
+  import("./features/transactions/pages/TransactionMonitoringPage")
+);
 
 const REVIEW_ROLES = new Set([
   "admin",
@@ -235,7 +262,8 @@ export default function App() {
           ) : null}
         </div>
       </nav>
-      <Routes>
+      <Suspense fallback={<PageLoading />}>
+        <Routes>
         <Route
           path="/"
           element={
@@ -358,7 +386,8 @@ export default function App() {
             />
           }
         />
-      </Routes>
+        </Routes>
+      </Suspense>
     </>
   );
 }
